@@ -1,4 +1,4 @@
-package com.example.bluetoothexample
+package pl.gunock.bluetoothexample.server
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
@@ -11,10 +11,10 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.example.bluetoothexample.databinding.ContentMainBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -36,6 +36,8 @@ class MainActivity : AppCompatActivity() {
         val SERVICE_UUID = UUID(1, 1)
     }
 
+    private lateinit var mBinding: ContentMainBinding
+
     private var mBluetoothAdapter: BluetoothAdapter? = null
 
     private val mSocket: BluetoothServerSocket? by lazy(LazyThreadSafetyMode.NONE) {
@@ -44,7 +46,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        mBinding = ContentMainBinding.inflate(layoutInflater)
+        setContentView(mBinding.btnServer)
+
 
         val permissions: MutableList<String> = mutableListOf()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -88,7 +92,7 @@ class MainActivity : AppCompatActivity() {
             startActivityForResult(discoverableIntent, REQUEST_DISCOVERABLE)
         }
 
-        findViewById<Button>(R.id.btn_server).setOnClickListener {
+        mBinding.btnServer.setOnClickListener {
             CoroutineScope(Dispatchers.IO).launch {
                 Log.i(TAG, "Started listening")
                 acceptConnection()

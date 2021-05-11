@@ -1,4 +1,4 @@
-package pl.gunock.client
+package pl.gunock.bluetoothexample.client
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
@@ -11,7 +11,6 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -19,6 +18,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import pl.gunock.client.databinding.ContentMainBinding
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -30,6 +30,8 @@ class MainActivity : AppCompatActivity() {
         val SERVICE_UUID = UUID(1, 1)
     }
 
+    private lateinit var mBinding: ContentMainBinding
+
     private var mBluetoothAdapter: BluetoothAdapter? = null
 
     private var mConnectedDevice: BluetoothDevice? = null
@@ -40,7 +42,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        mBinding = ContentMainBinding.inflate(layoutInflater)
+        setContentView(mBinding.root)
+
 
         val permissions: MutableList<String> = mutableListOf()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -72,6 +76,7 @@ class MainActivity : AppCompatActivity() {
                 "Oops! It looks like your device doesn't have bluetooth!",
                 Toast.LENGTH_SHORT
             ).show()
+            return
         }
 
         if (mBluetoothAdapter?.isEnabled == false) {
@@ -86,14 +91,14 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "DevName: $deviceName")
             Log.d(TAG, "DevMAC: $deviceHardwareAddress")
         }
-        mConnectedDevice = pairedDevices?.first { device ->
+        mConnectedDevice = pairedDevices?.firstOrNull { device ->
             listOf("xperia", "oneplus").any {
 //            listOf("xperia", "galaxy", "oneplus").any {
                 device.name.contains(it, true)
             }
         }
 
-        findViewById<Button>(R.id.btn_client).setOnClickListener {
+        mBinding.btnClient.setOnClickListener {
             CoroutineScope(Dispatchers.IO).launch {
                 Log.i(TAG, "Started listening")
                 connectToServer()
