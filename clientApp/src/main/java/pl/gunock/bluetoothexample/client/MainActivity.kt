@@ -18,7 +18,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import pl.gunock.client.databinding.ContentMainBinding
+import pl.gunock.bluetoothexample.client.databinding.ActivityMainBinding
+import pl.gunock.bluetoothexample.client.databinding.ContentMainBinding
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -42,8 +43,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mBinding = ContentMainBinding.inflate(layoutInflater)
-        setContentView(mBinding.root)
+        val rootBinding = ActivityMainBinding.inflate(layoutInflater)
+        mBinding = rootBinding.contentMain
+        setContentView(rootBinding.root)
 
 
         val permissions: MutableList<String> = mutableListOf()

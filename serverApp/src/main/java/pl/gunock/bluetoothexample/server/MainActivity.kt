@@ -14,11 +14,12 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.example.bluetoothexample.databinding.ContentMainBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import pl.gunock.bluetoothexample.server.databinding.ActivityMainBinding
+import pl.gunock.bluetoothexample.server.databinding.ContentMainBinding
 import java.io.IOException
 import java.util.*
 
@@ -46,8 +47,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mBinding = ContentMainBinding.inflate(layoutInflater)
-        setContentView(mBinding.btnServer)
+        val rootBinding = ActivityMainBinding.inflate(layoutInflater)
+        mBinding = rootBinding.contentMain
+        setContentView(rootBinding.root)
 
 
         val permissions: MutableList<String> = mutableListOf()

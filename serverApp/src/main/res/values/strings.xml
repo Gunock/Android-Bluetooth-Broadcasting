@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">BluetoothTest</string>
+    <string name="app_name">Bluetooth Server</string>
     <string name="main_activity_start_server">Start server</string>
 </resources>
