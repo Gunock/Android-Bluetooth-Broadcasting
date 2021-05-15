@@ -14,10 +14,11 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import kotlinx.coroutines.CoroutineScope
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import pl.gunock.bluetoothexample.server.databinding.ActivityMainBinding
 import pl.gunock.bluetoothexample.server.databinding.ContentMainBinding
 import java.io.IOException
@@ -88,19 +89,16 @@ class MainActivity : AppCompatActivity() {
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
         }
 
-        CoroutineScope(Dispatchers.Main).launch {
-            val discoverableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE)
-            intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 600)
-            startActivityForResult(discoverableIntent, REQUEST_DISCOVERABLE)
-        }
-
         mBinding.btnServer.setOnClickListener {
-            CoroutineScope(Dispatchers.IO).launch {
+            lifecycleScope.launch(Dispatchers.Main) {
                 Log.i(TAG, "Started listening")
                 acceptConnection()
             }
-
         }
+
+        val discoverableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE)
+        intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 600)
+        startActivityForResult(discoverableIntent, REQUEST_DISCOVERABLE)
     }
 
     override fun onRequestPermissionsResult(
@@ -138,31 +136,36 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    @Suppress("BlockingMethodInNonBlockingContext")
-    suspend fun acceptConnection() {
+    private suspend fun acceptConnection() {
         var shouldLoop = true
         while (shouldLoop) {
-            val socket: BluetoothSocket? = try {
-                mSocket?.accept()
+            val socket: BluetoothSocket = try {
+                withContext(Dispatchers.IO) {
+                    @Suppress("BlockingMethodInNonBlockingContext")
+                    mSocket?.accept()
+                }
             } catch (e: IOException) {
                 Log.e(TAG, "Socket's accept() method failed", e)
                 shouldLoop = false
                 null
+            } ?: continue
+
+            Log.i(TAG, "Connection accepted")
+            manageMyConnectedSocket(socket)
+
+            withContext(Dispatchers.IO) {
+                @Suppress("BlockingMethodInNonBlockingContext")
+                socket.use {
+                    val text = "Hello there!"
+                    Log.i(TAG, "Sent message '$text'")
+
+                    socket.outputStream.write(text.toByteArray())
+                    socket.outputStream.flush()
+                }
             }
-            socket?.also {
-                Log.i(TAG, "Connection accepted")
-                manageMyConnectedSocket(it)
 
-                val text = "Hello there!"
-                socket.outputStream.write(text.toByteArray())
-                socket.outputStream.flush()
-                Log.i(TAG, "Sent message '$text'")
-
-                delay(5000)
-
-                socket.close()
-                shouldLoop = false
-            }
+            delay(5000)
+            shouldLoop = false
         }
     }
 }

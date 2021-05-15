@@ -14,7 +14,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import kotlinx.coroutines.CoroutineScope
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -46,7 +46,6 @@ class MainActivity : AppCompatActivity() {
         val rootBinding = ActivityMainBinding.inflate(layoutInflater)
         mBinding = rootBinding.contentMain
         setContentView(rootBinding.root)
-
 
         val permissions: MutableList<String> = mutableListOf()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -101,7 +100,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         mBinding.btnClient.setOnClickListener {
-            CoroutineScope(Dispatchers.IO).launch {
+            lifecycleScope.launch(Dispatchers.IO) {
                 Log.i(TAG, "Started listening")
                 connectToServer()
             }
@@ -158,7 +157,6 @@ class MainActivity : AppCompatActivity() {
             Log.i(TAG, "Received message '$text'")
 
             manageMyConnectedSocket(socket)
-            socket.close()
         }
     }
 }
