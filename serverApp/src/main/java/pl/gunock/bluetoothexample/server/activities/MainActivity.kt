@@ -1,10 +1,8 @@
-package pl.gunock.bluetoothexample.server
+package pl.gunock.bluetoothexample.server.activities
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
-import android.bluetooth.BluetoothServerSocket
-import android.bluetooth.BluetoothSocket
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -16,13 +14,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import pl.gunock.bluetoothexample.server.misc.BluetoothServer
 import pl.gunock.bluetoothexample.server.databinding.ActivityMainBinding
 import pl.gunock.bluetoothexample.server.databinding.ContentMainBinding
-import java.io.IOException
-import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -33,18 +28,13 @@ class MainActivity : AppCompatActivity() {
 
         const val REQUEST_ENABLE_BT = 1
         const val REQUEST_DISCOVERABLE = 2
-
-        const val SERVICE_NAME = "SERVICE"
-        val SERVICE_UUID = UUID(1, 1)
     }
 
     private lateinit var mBinding: ContentMainBinding
 
     private var mBluetoothAdapter: BluetoothAdapter? = null
+    private var mBluetoothServer: BluetoothServer? = null
 
-    private val mSocket: BluetoothServerSocket? by lazy(LazyThreadSafetyMode.NONE) {
-        mBluetoothAdapter?.listenUsingInsecureRfcommWithServiceRecord(SERVICE_NAME, SERVICE_UUID)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,33 +62,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initializeButtons() {
-        val bluetoothManager =
-            baseContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        mBluetoothAdapter = bluetoothManager.adapter
-
-        if (mBluetoothAdapter == null) {
-            Toast.makeText(
-                baseContext,
-                "Oops! It looks like your device doesn't have bluetooth!",
-                Toast.LENGTH_SHORT
-            ).show()
-        }
-
-        if (mBluetoothAdapter?.isEnabled == false) {
-            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
-        }
-
-        mBinding.btnServer.setOnClickListener {
-            lifecycleScope.launch(Dispatchers.Main) {
-                Log.i(TAG, "Started listening")
-                acceptConnection()
-            }
-        }
-
-        val discoverableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE)
-        intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 600)
-        startActivityForResult(discoverableIntent, REQUEST_DISCOVERABLE)
+        setUpListeners()
+        setUpBluetooth()
     }
 
     override fun onRequestPermissionsResult(
@@ -106,6 +71,7 @@ class MainActivity : AppCompatActivity() {
         permissions: Array<String>,
         grantResults: IntArray
     ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         Log.i(TAG, "Request permission result: $requestCode")
         if (requestCode != BT_PERMISSION) {
             return
@@ -132,40 +98,57 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun manageMyConnectedSocket(bluetoothSocket: BluetoothSocket) {
+    private fun setUpBluetooth() {
+        val bluetoothManager =
+            baseContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        mBluetoothAdapter = bluetoothManager.adapter
 
+        if (mBluetoothAdapter == null) {
+            Toast.makeText(
+                baseContext,
+                "Oops! It looks like your device doesn't have bluetooth!",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        if (mBluetoothAdapter?.isEnabled == false) {
+            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
+        }
+
+        val discoverableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE)
+        intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 600)
+        startActivityForResult(discoverableIntent, REQUEST_DISCOVERABLE)
+
+        mBluetoothServer = BluetoothServer(mBluetoothAdapter!!).apply {
+            onConnectCallback = {
+                Toast.makeText(
+                    baseContext,
+                    "${it.remoteDevice.name} has connected",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            onDisconnectCallback = {
+                Toast.makeText(
+                    baseContext,
+                    "${it.remoteDevice.name} has disconnected",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
     }
 
-    private suspend fun acceptConnection() {
-        var shouldLoop = true
-        while (shouldLoop) {
-            val socket: BluetoothSocket = try {
-                withContext(Dispatchers.IO) {
-                    @Suppress("BlockingMethodInNonBlockingContext")
-                    mSocket?.accept()
-                }
-            } catch (e: IOException) {
-                Log.e(TAG, "Socket's accept() method failed", e)
-                shouldLoop = false
-                null
-            } ?: continue
-
-            Log.i(TAG, "Connection accepted")
-            manageMyConnectedSocket(socket)
-
-            withContext(Dispatchers.IO) {
-                @Suppress("BlockingMethodInNonBlockingContext")
-                socket.use {
-                    val text = "Hello there!"
-                    Log.i(TAG, "Sent message '$text'")
-
-                    socket.outputStream.write(text.toByteArray())
-                    socket.outputStream.flush()
-                }
+    private fun setUpListeners() {
+        mBinding.btnServer.setOnClickListener {
+            lifecycleScope.launch(Dispatchers.Main) {
+                Log.i(TAG, "Started listening")
+                mBluetoothServer!!.acceptConnection()
             }
+        }
 
-            delay(5000)
-            shouldLoop = false
+        mBinding.btnSendMessage.setOnClickListener {
+            val message = mBinding.edMessage.text.toString()
+            mBluetoothServer!!.broadcastMessage(message)
         }
     }
 }

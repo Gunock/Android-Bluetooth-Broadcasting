@@ -14,7 +14,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BluetoothTest">
         <activity
-            android:name="pl.gunock.bluetoothexample.server.MainActivity"
+            android:name="pl.gunock.bluetoothexample.server.activities.MainActivity"
             android:label="@string/app_name"
             android:theme="@style/Theme.BluetoothTest.NoActionBar">
             <intent-filter>
