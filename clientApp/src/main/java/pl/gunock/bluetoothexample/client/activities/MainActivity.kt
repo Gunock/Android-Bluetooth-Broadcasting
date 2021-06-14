@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.os.ParcelUuid
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
@@ -21,22 +22,23 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import pl.gunock.bluetoothexample.client.R
-import pl.gunock.bluetoothexample.client.misc.BluetoothClient
-import pl.gunock.bluetoothexample.client.databinding.ActivityMainBinding
-import pl.gunock.bluetoothexample.client.databinding.ContentMainBinding
+import pl.gunock.bluetoothexample.client.databinding.ActivityClientMainBinding
+import pl.gunock.bluetoothexample.client.databinding.ContentClientMainBinding
 import pl.gunock.bluetoothexample.client.fragments.dialogs.PickDeviceDialogFragment
 import pl.gunock.bluetoothexample.client.fragments.viemodels.PickDeviceDialogViewModel
+import pl.gunock.bluetoothexample.common.bluetooth.BluetoothClient
+import pl.gunock.bluetoothexample.server.registerForActivityResult
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
     private companion object {
         const val TAG = "MainActivity"
         const val BT_PERMISSION = 1
-        const val REQUEST_ENABLE_BT = 2
-        val SERVICE_UUID = UUID(1, 1)
+
+        val SERVICE_UUID: UUID = UUID.fromString("2f58e6c0-5ccf-4d2f-afec-65a2d98e2141")
     }
 
-    private lateinit var mBinding: ContentMainBinding
+    private lateinit var mBinding: ContentClientMainBinding
 
     private lateinit var mPickDeviceDialogViewModel: PickDeviceDialogViewModel
 
@@ -46,9 +48,16 @@ class MainActivity : AppCompatActivity() {
 
     private var mBluetoothClient: BluetoothClient? = null
 
+    private val mEnableBluetoothActivityResultLauncher =
+        registerForActivityResult { result: ActivityResult ->
+            if (result.resultCode == RESULT_CANCELED) {
+                Log.d(TAG, "User refused REQUEST_ENABLE_BT")
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val rootBinding = ActivityMainBinding.inflate(layoutInflater)
+        val rootBinding = ActivityClientMainBinding.inflate(layoutInflater)
         mBinding = rootBinding.contentMain
         setContentView(rootBinding.root)
 
@@ -99,14 +108,6 @@ class MainActivity : AppCompatActivity() {
         initializeButtons()
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == REQUEST_ENABLE_BT && resultCode == RESULT_CANCELED) {
-            Log.d(TAG, "User refused REQUEST_ENABLE_BT")
-        }
-    }
-
     private fun setUpBluetooth() {
         mBluetoothManager =
             baseContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -123,16 +124,16 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (mBluetoothAdapter?.isEnabled == false) {
-            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
+            val enableBluetoothIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+            mEnableBluetoothActivityResultLauncher.launch(enableBluetoothIntent)
         }
     }
 
     private fun setUpListeners() {
         mBinding.btnPickServerDevice.setOnClickListener {
             PickDeviceDialogFragment(
-                mBluetoothManager,
-                ParcelUuid(SERVICE_UUID)
+                ParcelUuid(SERVICE_UUID),
+                mBluetoothManager
             ).apply {
                 setStyle(DialogFragment.STYLE_NORMAL, R.style.Theme_BluetoothTest_Dialog)
                 show(supportFragmentManager, PickDeviceDialogFragment.TAG)
@@ -157,6 +158,7 @@ class MainActivity : AppCompatActivity() {
         }
         mPickDeviceDialogViewModel.bluetoothDevice.removeObservers(this)
 
+        mBluetoothClient?.disconnect()
         mBluetoothClient = BluetoothClient(
             device,
             SERVICE_UUID
@@ -165,6 +167,21 @@ class MainActivity : AppCompatActivity() {
             Log.i(TAG, "Received message '$text'")
             withContext(Dispatchers.Main) {
                 mBinding.tvMessagePreview.text = text
+            }
+        }.apply {
+            setOnConnectionSuccessListener {
+                mBinding.tvServerConnectionStatus.text =
+                    getString(R.string.activity_main_connected).format(it.remoteDevice.name)
+            }
+
+            setOnConnectionFailureListener {
+                mBinding.tvServerConnectionStatus.text =
+                    getString(R.string.activity_main_disconnected)
+            }
+
+            setOnDisconnectionListener {
+                mBinding.tvServerConnectionStatus.text =
+                    getString(R.string.activity_main_disconnected)
             }
         }
 

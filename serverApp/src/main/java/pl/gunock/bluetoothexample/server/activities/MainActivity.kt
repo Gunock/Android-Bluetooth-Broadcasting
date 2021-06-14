@@ -10,38 +10,59 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import pl.gunock.bluetoothexample.server.misc.BluetoothServer
-import pl.gunock.bluetoothexample.server.databinding.ActivityMainBinding
-import pl.gunock.bluetoothexample.server.databinding.ContentMainBinding
+import pl.gunock.bluetoothexample.common.bluetooth.BluetoothServer
+import pl.gunock.bluetoothexample.server.R
+import pl.gunock.bluetoothexample.server.databinding.ActivityServerMainBinding
+import pl.gunock.bluetoothexample.server.databinding.ContentServerMainBinding
+import pl.gunock.bluetoothexample.server.registerForActivityResult
+import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
     private companion object {
         const val TAG = "MainActivity"
 
-        const val BT_PERMISSION = 1
+        const val BT_PERMISSION_RESULT_CODE = 1
 
-        const val REQUEST_ENABLE_BT = 1
-        const val REQUEST_DISCOVERABLE = 2
+        const val SERVICE_NAME = "Broadcast Service"
+        val SERVICE_UUID: UUID = UUID.fromString("2f58e6c0-5ccf-4d2f-afec-65a2d98e2141")
     }
 
-    private lateinit var mBinding: ContentMainBinding
+    private lateinit var mBinding: ContentServerMainBinding
 
     private var mBluetoothAdapter: BluetoothAdapter? = null
-    private var mBluetoothServer: BluetoothServer? = null
+    private lateinit var mBluetoothServer: BluetoothServer
 
+    private val mDiscoverableActivityResultLauncher =
+        registerForActivityResult { result: ActivityResult ->
+            if (result.resultCode == RESULT_CANCELED) {
+                Log.d(TAG, "User refused REQUEST_DISCOVERABLE")
+            } else {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    mBluetoothServer.stop()
+                    mBluetoothServer.startLoop()
+                }
+            }
+        }
+
+    private val mEnableBluetoothActivityResultLauncher =
+        registerForActivityResult { result: ActivityResult ->
+            if (result.resultCode == RESULT_CANCELED) {
+                Log.d(TAG, "User refused REQUEST_ENABLE_BT")
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val rootBinding = ActivityMainBinding.inflate(layoutInflater)
+        val rootBinding = ActivityServerMainBinding.inflate(layoutInflater)
         mBinding = rootBinding.contentMain
         setContentView(rootBinding.root)
-
 
         val permissions: MutableList<String> = mutableListOf()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -57,7 +78,7 @@ class MainActivity : AppCompatActivity() {
         if (permissions.isEmpty()) {
             initializeButtons()
         } else {
-            requestPermissions(permissions.toTypedArray(), BT_PERMISSION)
+            requestPermissions(permissions.toTypedArray(), BT_PERMISSION_RESULT_CODE)
         }
     }
 
@@ -73,7 +94,7 @@ class MainActivity : AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         Log.i(TAG, "Request permission result: $requestCode")
-        if (requestCode != BT_PERMISSION) {
+        if (requestCode != BT_PERMISSION_RESULT_CODE) {
             return
         }
 
@@ -83,19 +104,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         initializeButtons()
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == REQUEST_ENABLE_BT && resultCode == RESULT_CANCELED) {
-            Log.d(TAG, "User refused REQUEST_ENABLE_BT")
-        }
-
-        if (requestCode == REQUEST_DISCOVERABLE && resultCode == RESULT_CANCELED) {
-            Log.d(TAG, "User refused REQUEST_DISCOVERABLE")
-        }
-
     }
 
     private fun setUpBluetooth() {
@@ -112,43 +120,58 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (mBluetoothAdapter?.isEnabled == false) {
-            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
+            val enableBluetoothIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+            mEnableBluetoothActivityResultLauncher.launch(enableBluetoothIntent)
         }
 
-        val discoverableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE)
-        intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 600)
-        startActivityForResult(discoverableIntent, REQUEST_DISCOVERABLE)
+        mBluetoothServer = BluetoothServer(
+            mBluetoothAdapter!!,
+            SERVICE_NAME,
+            SERVICE_UUID
+        )
 
-        mBluetoothServer = BluetoothServer(mBluetoothAdapter!!).apply {
-            onConnectCallback = {
-                Toast.makeText(
-                    baseContext,
-                    "${it.remoteDevice.name} has connected",
-                    Toast.LENGTH_SHORT
-                ).show()
+        mBluetoothServer.isStopped.observe(this) {
+            if (it) {
+                mBinding.tvServerStatus.text = getString(R.string.activity_main_server_off)
+            } else {
+                mBinding.tvServerStatus.text = getString(R.string.activity_main_server_on)
             }
-            onDisconnectCallback = {
-                Toast.makeText(
-                    baseContext,
-                    "${it.remoteDevice.name} has disconnected",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
+        }
+
+        mBluetoothServer.setOnConnectListener {
+            Toast.makeText(
+                baseContext,
+                "${it.remoteDevice.name} has connected",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        mBluetoothServer.setOnDisconnectListener {
+            Toast.makeText(
+                baseContext,
+                "${it.remoteDevice.name} has disconnected",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
     private fun setUpListeners() {
-        mBinding.btnServer.setOnClickListener {
-            lifecycleScope.launch(Dispatchers.Main) {
-                Log.i(TAG, "Started listening")
-                mBluetoothServer!!.acceptConnection()
-            }
+        mBinding.btnServerStart.setOnClickListener {
+            Log.i(TAG, "Started listening")
+            val discoverableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE)
+            intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 600)
+
+            mDiscoverableActivityResultLauncher.launch(discoverableIntent)
+        }
+
+        mBinding.btnServerStop.setOnClickListener {
+            mBluetoothServer.stop()
         }
 
         mBinding.btnSendMessage.setOnClickListener {
             val message = mBinding.edMessage.text.toString()
-            mBluetoothServer!!.broadcastMessage(message)
+            Log.i(TAG, "Sending message : $message")
+            mBluetoothServer.broadcastMessage(message)
         }
     }
 }
