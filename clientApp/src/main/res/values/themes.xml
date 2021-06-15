@@ -20,8 +20,8 @@
         <item name="android:windowNoTitle">false</item>
     </style>
 
-    <style name="Theme.BluetoothTest.Icon">
+    <style name="Theme.BluetoothTest.Icon" parent="">
         <item name="android:tint">@color/black</item>
-        <item name="android:background">@android:color/transparent</item>
+        <item name="android:backgroundTint">@android:color/transparent</item>
     </style>
 </resources>

@@ -20,6 +20,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import pl.gunock.bluetoothexample.client.R
 import pl.gunock.bluetoothexample.client.databinding.ActivityClientMainBinding
@@ -33,7 +34,7 @@ import java.util.*
 class MainActivity : AppCompatActivity() {
     private companion object {
         const val TAG = "MainActivity"
-        const val BT_PERMISSION = 1
+        const val BT_PERMISSION_RESULT_CODE = 1
 
         val SERVICE_UUID: UUID = UUID.fromString("2f58e6c0-5ccf-4d2f-afec-65a2d98e2141")
     }
@@ -79,7 +80,7 @@ class MainActivity : AppCompatActivity() {
         if (permissions.isEmpty()) {
             initializeButtons()
         } else {
-            requestPermissions(permissions.toTypedArray(), BT_PERMISSION)
+            requestPermissions(permissions.toTypedArray(), BT_PERMISSION_RESULT_CODE)
         }
     }
 
@@ -96,7 +97,7 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
         Log.i(TAG, "Request permission result: $requestCode")
-        if (requestCode != BT_PERMISSION) {
+        if (requestCode != BT_PERMISSION_RESULT_CODE) {
             return
         }
 
@@ -147,7 +148,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         mBinding.btnDisconnect.setOnClickListener {
-            mBluetoothClient?.disconnect()
+            lifecycleScope.launch(Dispatchers.Default) { mBluetoothClient?.disconnect() }
             Log.i(TAG, "Client disconnected")
         }
     }
@@ -158,7 +159,7 @@ class MainActivity : AppCompatActivity() {
         }
         mPickDeviceDialogViewModel.bluetoothDevice.removeObservers(this)
 
-        mBluetoothClient?.disconnect()
+        runBlocking { mBluetoothClient?.disconnect() }
         mBluetoothClient = BluetoothClient(
             device,
             SERVICE_UUID

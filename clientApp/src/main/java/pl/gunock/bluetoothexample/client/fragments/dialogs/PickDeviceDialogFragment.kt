@@ -40,7 +40,9 @@ class PickDeviceDialogFragment(
 
     private lateinit var mRecyclerViewAdapter: BluetoothDeviceItemsAdapter
 
-    private val mServiceDiscoveryManager = BluetoothServiceDiscoveryManager(listOf(serviceUuid))
+    private val mServiceDiscoveryManager by lazy {
+        BluetoothServiceDiscoveryManager(requireContext(), listOf(serviceUuid))
+    }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         mPickDeviceDialogViewModel =

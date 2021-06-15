@@ -3,26 +3,26 @@ package pl.gunock.bluetoothexample.common.bluetooth
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.util.Log
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import java.io.IOException
 import java.util.*
 
 class BluetoothClient(
     connectedDevice: BluetoothDevice,
     serviceUUID: UUID,
-    private val mOnDataCallback: suspend (ByteArray) -> Unit
+    onDataListener: suspend (ByteArray) -> Unit
 ) {
     private companion object {
         const val TAG = "BluetoothClient"
     }
 
-    private var onConnectionSuccessListener: (suspend (BluetoothSocket) -> Unit)? = null
+    private var mOnConnectionSuccessListener: (suspend (BluetoothSocket) -> Unit)? = null
 
-    private var onConnectionFailureListener: (suspend (BluetoothSocket) -> Unit)? = null
+    private var mOnConnectionFailureListener: (suspend (BluetoothSocket) -> Unit)? = null
 
-    private var onDisconnectionListener: ((BluetoothSocket) -> Unit)? = null
+    private var mOnDisconnectionListener: ((BluetoothSocket) -> Unit)? = null
+
+    private var mOnDataListener: (suspend (ByteArray) -> Unit)? = onDataListener
 
     private var mStop: Boolean = false
 
@@ -30,19 +30,99 @@ class BluetoothClient(
         connectedDevice.createRfcommSocketToServiceRecord(serviceUUID)
 
     fun setOnConnectionSuccessListener(listener: (suspend (BluetoothSocket) -> Unit)?) {
-        onConnectionSuccessListener = listener
+        mOnConnectionSuccessListener = listener
     }
 
     fun setOnConnectionFailureListener(listener: (suspend (BluetoothSocket) -> Unit)?) {
-        onConnectionFailureListener = listener
+        mOnConnectionFailureListener = listener
     }
 
     fun setOnDisconnectionListener(listener: ((BluetoothSocket) -> Unit)?) {
-        onDisconnectionListener = listener
+        mOnDisconnectionListener = listener
+    }
+
+    fun setOnDataListener(listener: (suspend (ByteArray) -> Unit)?) {
+        mOnDataListener = listener
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
     suspend fun startLoop() {
+        if (!connect()) {
+            return
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            while (!mStop) {
+                delay(500)
+                checkConnectionState()
+            }
+        }
+
+        var buffer: ByteArray = byteArrayOf()
+        while (!mStop) {
+            if (!mSocket.isConnected) {
+                Log.i(TAG, "Socket disconnected")
+                break
+            }
+
+            try {
+                val available = mSocket.inputStream.available()
+                if (available == 0 && buffer.isEmpty()) {
+                    delay(50)
+                    continue
+                }
+                Log.i(TAG, "Available data: $available")
+
+                val subBuffer = ByteArray(available)
+                mSocket.inputStream.read(subBuffer)
+                buffer += subBuffer
+            } catch (ignored: IOException) {
+                Log.i(TAG, "Socket suddenly closed")
+                break
+            }
+
+            val terminationSymbolPosition = buffer.indexOf(4.toByte())
+            if (terminationSymbolPosition == -1) {
+                continue
+            }
+
+            val messageBuffer = buffer.copyOfRange(0, terminationSymbolPosition)
+            Log.i(TAG, "Received whole message with size ${messageBuffer.size}")
+
+            buffer = if (terminationSymbolPosition != buffer.size - 1) {
+                buffer.copyOfRange(terminationSymbolPosition + 1, buffer.size)
+            } else {
+                byteArrayOf()
+            }
+
+            withContext(Dispatchers.Main) {
+                mOnDataListener?.invoke(messageBuffer)
+            }
+        }
+    }
+
+    @Suppress("BlockingMethodInNonBlockingContext")
+    suspend fun disconnect() {
+        mStop = true
+        mSocket.close()
+        withContext(Dispatchers.Main) {
+            mOnDisconnectionListener?.invoke(mSocket)
+        }
+    }
+
+    @Suppress("BlockingMethodInNonBlockingContext")
+    private suspend fun checkConnectionState() {
+        try {
+            mSocket.outputStream.write(0)
+        } catch (ignored: IOException) {
+            Log.i(TAG, "Socket connection closed")
+            withContext(Dispatchers.Main) { mOnDisconnectionListener?.invoke(mSocket) }
+            mStop = true
+        }
+    }
+
+    @Suppress("BlockingMethodInNonBlockingContext")
+    private suspend fun connect(): Boolean {
         try {
             mSocket.connect()
         } catch (ignored: IOException) {
@@ -53,51 +133,15 @@ class BluetoothClient(
         if (mSocket.isConnected) {
             Log.i(TAG, "Connected")
             withContext(Dispatchers.Main) {
-                onConnectionSuccessListener?.invoke(mSocket)
+                mOnConnectionSuccessListener?.invoke(mSocket)
             }
+            return true
         } else {
             Log.w(TAG, "Connection failed")
             withContext(Dispatchers.Main) {
-                onConnectionFailureListener?.invoke(mSocket)
+                mOnConnectionFailureListener?.invoke(mSocket)
             }
-            return
-        }
-
-        while (!mStop) {
-            if (!mSocket.isConnected) {
-                Log.i(TAG, "Socket disconnected")
-                break
-            }
-
-            val buffer: ByteArray
-            try {
-                val available = mSocket.inputStream.available()
-                if (available == 0) {
-                    delay(100)
-                    continue
-                }
-
-                Log.i(TAG, "Available data: $available")
-
-                buffer = ByteArray(available)
-                mSocket.inputStream.read(buffer)
-            } catch (ignored: IOException) {
-                Log.i(TAG, "Socket suddenly closed")
-                onDisconnectionListener?.invoke(mSocket)
-                mStop = true
-                break
-            }
-
-            withContext(Dispatchers.Main) {
-                mOnDataCallback(buffer)
-            }
+            return false
         }
     }
-
-    fun disconnect() {
-        mStop = true
-        mSocket.close()
-        onDisconnectionListener?.invoke(mSocket)
-    }
-
 }

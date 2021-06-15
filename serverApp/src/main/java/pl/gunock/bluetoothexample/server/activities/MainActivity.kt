@@ -45,6 +45,7 @@ class MainActivity : AppCompatActivity() {
                 Log.d(TAG, "User refused REQUEST_DISCOVERABLE")
             } else {
                 lifecycleScope.launch(Dispatchers.IO) {
+                    Log.i(TAG, "Started listening")
                     mBluetoothServer.stop()
                     mBluetoothServer.startLoop()
                 }
@@ -157,9 +158,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun setUpListeners() {
         mBinding.btnServerStart.setOnClickListener {
-            Log.i(TAG, "Started listening")
             val discoverableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE)
-            intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 600)
+            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0)
 
             mDiscoverableActivityResultLauncher.launch(discoverableIntent)
         }

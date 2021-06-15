@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">Bluetooth Client</string>
     <string name="main_activity_connect_to_server">Connect to server</string>
+    <string name="activity_main_disconnected">Disconnected</string>
+    <string name="activity_main_connected">Connected (%s)</string>
+    <string name="activity_main_no_content">NO CONTENT YET</string>
+    <string name="activity_main_disconnect">Disconnect</string>
 </resources>

@@ -22,9 +22,9 @@ class BluetoothServer(
     val isStopped: LiveData<Boolean> get() = mIsStopped
 
 
-    private var mOnConnectCallback: (suspend (BluetoothSocket) -> Unit)? = null
+    private var mOnConnectListener: (suspend (BluetoothSocket) -> Unit)? = null
 
-    private var mOnDisconnectCallback: ((BluetoothSocket) -> Unit)? = null
+    private var mOnDisconnectListener: ((BluetoothSocket) -> Unit)? = null
 
     private var mServerSocket: BluetoothServerSocket? = null
 
@@ -38,11 +38,11 @@ class BluetoothServer(
     }
 
     fun setOnConnectListener(listener: (suspend (BluetoothSocket) -> Unit)?) {
-        mOnConnectCallback = listener
+        mOnConnectListener = listener
     }
 
     fun setOnDisconnectListener(listener: ((BluetoothSocket) -> Unit)?) {
-        mOnDisconnectCallback = listener
+        mOnDisconnectListener = listener
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
@@ -53,13 +53,14 @@ class BluetoothServer(
         )
 
         mIsStopped.postValue(false)
+        Log.i(TAG, "Server loop started")
         do {
             val clientSocket: BluetoothSocket =
                 withContext(Dispatchers.IO) { acceptConnection() } ?: continue
 
             Log.i(TAG, "Connection accepted : ${clientSocket.remoteDevice.name}")
 
-            withContext(Dispatchers.Main) { mOnConnectCallback?.invoke(clientSocket) }
+            withContext(Dispatchers.Main) { mOnConnectListener?.invoke(clientSocket) }
             mClientSockets.add(clientSocket)
         } while (!mIsStopped.value!!)
     }
@@ -71,18 +72,20 @@ class BluetoothServer(
         mIsStopped.postValue(true)
     }
 
-    @Suppress("BlockingMethodInNonBlockingContext")
     fun broadcastMessage(message: String) {
         mClientSockets.forEach { socket ->
-            CoroutineScope(Dispatchers.IO).launch {
-                Log.i(TAG, "Broadcast message '$message'")
+            CoroutineScope(Dispatchers.IO).launch { sendMessage(socket, message) }
+        }
+    }
 
-                try {
-                    socket.outputStream.write(message.toByteArray())
-                    socket.outputStream.flush()
-                } catch (ignored: IOException) {
-                }
-            }
+    fun sendMessage(socket: BluetoothSocket, message: String) {
+        Log.i(TAG, "Broadcast message '$message'")
+
+        val nullTerminatedMessage = (message + 4.toChar()).toByteArray()
+        try {
+            socket.outputStream.write(nullTerminatedMessage)
+            socket.outputStream.flush()
+        } catch (ignored: IOException) {
         }
     }
 
@@ -115,7 +118,7 @@ class BluetoothServer(
             socket.inputStream.skip(1)
         } catch (ignored: IOException) {
             Log.i(TAG, "Socket connection closed")
-            withContext(Dispatchers.Main) { mOnDisconnectCallback?.invoke(socket) }
+            withContext(Dispatchers.Main) { mOnDisconnectListener?.invoke(socket) }
             return false
         }
         return true
