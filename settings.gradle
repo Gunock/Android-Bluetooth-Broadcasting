@@ -1,3 +1,2 @@
-include ':serverApp'
 rootProject.name = "BluetoothTest"
-include ':clientApp'
+include ':app'

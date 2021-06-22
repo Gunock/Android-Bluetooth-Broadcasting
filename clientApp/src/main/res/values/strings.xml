@@ -1,4 +1,0 @@
-<resources>
-    <string name="app_name">Bluetooth Client</string>
-    <string name="main_activity_connect_to_server">Connect to server</string>
-</resources>
