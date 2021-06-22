@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">Bluetooth Broadcast</string>
+    <string name="label_client_activity">Bluetooth Client</string>
+    <string name="label_server_activity">Bluetooth Server</string>
+
+    <string name="activity_main_btn_client">Client</string>
+    <string name="activity_main_btn_server">Server</string>
+
+    <string name="activity_client_connect_to_server">Connect to server</string>
+    <string name="activity_client_disconnected">Disconnected</string>
+    <string name="activity_client_connected">Connected (%s)</string>
+    <string name="activity_client_no_content">NO CONTENT YET</string>
+    <string name="activity_client_disconnect">Disconnect</string>
+
+    <string name="activity_server_start_server">Start server</string>
+    <string name="activity_server_server_off">Server OFF</string>
+    <string name="activity_server_server_on">Server ON</string>
+    <string name="activity_server_enter_message">Enter message</string>
+    <string name="activity_server_send_message">SEND MESSAGE</string>
+    <string name="activity_server_stop_server">STOP SERVER</string>
+
+
+    <string name="placeholder_bt_device">Bluetooth Device</string>
+
+    <string name="item_img_desc_available">Device available</string>
+    <string name="item_img_desc_not_available">Device not available</string>
+</resources>

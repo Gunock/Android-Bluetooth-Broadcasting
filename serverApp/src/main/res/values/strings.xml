@@ -1,9 +1,0 @@
-<resources>
-    <string name="app_name">Bluetooth Server</string>
-    <string name="main_activity_start_server">Start server</string>
-    <string name="activity_main_server_off">Server OFF</string>
-    <string name="activity_main_server_on">Server ON</string>
-    <string name="activity_main_enter_message">Enter message</string>
-    <string name="activity_main_send_message">SEND MESSAGE</string>
-    <string name="activity_main_stop_server">STOP SERVER</string>
-</resources>
