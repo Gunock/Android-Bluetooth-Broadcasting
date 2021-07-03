@@ -112,7 +112,7 @@ serviceDiscoveryManager.devices.observe(this) { collection: Set<BluetoothDevice>
 * [Kotlin Coroutines](https://kotlinlang.org/docs/coroutines-overview.html) for managing background threads with simplified code and reducing needs for callbacks.
 * [ViewBinding](https://developer.android.com/topic/libraries/view-binding) - Easy, type safe, null safe access to layout elements.
 * [ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel) - Store UI-related data that isn't destroyed on app rotations. Easily schedule asynchronous tasks for optimal execution.
-* [LiveData](https://developer.android.com/topic/libraries/architecture/livedata)- Build data objects that notify views when the underlying database changes.
+* [LiveData](https://developer.android.com/topic/libraries/architecture/livedata)- Build data objects that notify views when the underlying data changes.
 * [RecyclerView](https://developer.android.com/guide/topics/ui/layout/recyclerview?gclsrc=aw.ds&gclid=CjwKCAjwrPCGBhALEiwAUl9X03wCNk7bhvoxs_okW86jFVgc92QelSerqKyYmfEM54CbHOsKc3tYyxoCgRcQAvD_BwE) for custom list views.
 
 ## License
