@@ -9,27 +9,27 @@ import java.io.IOException
 import java.util.*
 
 class BluetoothServer(
-    private val mBluetoothAdapter: BluetoothAdapter,
-    private val mServiceName: String,
-    private val mServiceUUID: UUID
+    private val bluetoothAdapter: BluetoothAdapter,
+    private val serviceName: String,
+    private val serviceUUID: UUID
 ) {
     private companion object {
         const val TAG = "BluetoothClient"
     }
 
-    private var mOnConnectListener: (suspend (BluetoothSocket) -> Unit)? = null
+    private var onConnectListener: (suspend (BluetoothSocket) -> Unit)? = null
 
-    private var mOnDisconnectListener: ((BluetoothSocket) -> Unit)? = null
+    private var onDisconnectListener: ((BluetoothSocket) -> Unit)? = null
 
-    private var mOnStateChangeListener: ((Boolean) -> Unit)? = null
+    private var onStateChangeListener: ((Boolean) -> Unit)? = null
 
-    private var mServerSocket: BluetoothServerSocket? = null
+    private var serverSocket: BluetoothServerSocket? = null
 
-    private val mClientSockets: MutableList<BluetoothSocket> = mutableListOf()
+    private val clientSockets: MutableList<BluetoothSocket> = mutableListOf()
 
-    private var mIsStopped: Boolean = true
+    private var isStopped: Boolean = true
         set(value) {
-            mOnStateChangeListener?.invoke(value)
+            onStateChangeListener?.invoke(value)
         }
 
     init {
@@ -37,25 +37,25 @@ class BluetoothServer(
     }
 
     fun setOnConnectListener(listener: (suspend (BluetoothSocket) -> Unit)?) {
-        mOnConnectListener = listener
+        onConnectListener = listener
     }
 
     fun setOnDisconnectListener(listener: ((BluetoothSocket) -> Unit)?) {
-        mOnDisconnectListener = listener
+        onDisconnectListener = listener
     }
 
     fun setOnStateChangeListener(listener: ((Boolean) -> Unit)?) {
-        mOnStateChangeListener = listener
+        onStateChangeListener = listener
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
     suspend fun startLoop() {
-        mServerSocket = mBluetoothAdapter.listenUsingRfcommWithServiceRecord(
-            mServiceName,
-            mServiceUUID
+        serverSocket = bluetoothAdapter.listenUsingRfcommWithServiceRecord(
+            serviceName,
+            serviceUUID
         )
 
-        mIsStopped = false
+        isStopped = false
 
         Log.i(TAG, "Server loop started")
         do {
@@ -64,20 +64,20 @@ class BluetoothServer(
 
             Log.i(TAG, "Connection accepted : ${clientSocket.remoteDevice.name}")
 
-            withContext(Dispatchers.Main) { mOnConnectListener?.invoke(clientSocket) }
-            mClientSockets.add(clientSocket)
-        } while (!mIsStopped)
+            withContext(Dispatchers.Main) { onConnectListener?.invoke(clientSocket) }
+            clientSockets.add(clientSocket)
+        } while (!isStopped)
     }
 
     fun stop() {
-        mClientSockets.forEach { it.close() }
-        mClientSockets.clear()
-        mServerSocket?.close()
-        mIsStopped = true
+        clientSockets.forEach { it.close() }
+        clientSockets.clear()
+        serverSocket?.close()
+        isStopped = true
     }
 
     fun broadcastMessage(message: String) {
-        mClientSockets.forEach { socket ->
+        clientSockets.forEach { socket ->
             CoroutineScope(Dispatchers.IO).launch { sendMessage(socket, message) }
         }
     }
@@ -95,13 +95,13 @@ class BluetoothServer(
 
     private fun acceptConnection(): BluetoothSocket? {
         return try {
-            mServerSocket!!.accept()
+            serverSocket!!.accept()
         } catch (e: Exception) {
             when (e) {
                 is IOException,
                 is NullPointerException -> {
                     Log.e(TAG, "Socket's accept() method failed", e)
-                    mIsStopped = true
+                    isStopped = true
 
                     null
                 }
@@ -112,7 +112,7 @@ class BluetoothServer(
 
     private suspend fun monitorConnections() {
         while (true) {
-            mClientSockets.removeAll { runBlocking { !checkConnectionState(it) } }
+            clientSockets.removeAll { runBlocking { !checkConnectionState(it) } }
             delay(1000)
         }
     }
@@ -123,7 +123,7 @@ class BluetoothServer(
             socket.inputStream.skip(1)
         } catch (ignored: IOException) {
             Log.i(TAG, "Socket connection closed")
-            withContext(Dispatchers.Main) { mOnDisconnectListener?.invoke(socket) }
+            withContext(Dispatchers.Main) { onDisconnectListener?.invoke(socket) }
             return false
         }
         return true
