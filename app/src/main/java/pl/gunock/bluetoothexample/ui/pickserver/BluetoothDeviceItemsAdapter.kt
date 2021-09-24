@@ -18,9 +18,10 @@ class BluetoothDeviceItemsAdapter(
             return
         }
 
+        withContext(Dispatchers.Main) { notifyItemRangeRemoved(0, mItems.size) }
         mItems.clear()
         mItems.addAll(collection)
-        withContext(Dispatchers.Main) { notifyDataSetChanged() }
+        withContext(Dispatchers.Main) { notifyItemRangeInserted(0, mItems.size) }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

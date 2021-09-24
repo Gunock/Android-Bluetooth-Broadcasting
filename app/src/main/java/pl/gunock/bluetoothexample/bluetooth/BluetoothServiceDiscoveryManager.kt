@@ -83,8 +83,7 @@ class BluetoothServiceDiscoveryManager(
 
             // This is a workaround for bluetooth problem in android 6.0.1 and 7
             // https://issuetracker.google.com/issues/37075233
-            val buggyAndroidVersion = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                    && Build.VERSION.SDK_INT <= Build.VERSION_CODES.N
+            val buggyAndroidVersion = Build.VERSION.SDK_INT <= Build.VERSION_CODES.N
 
             val uuids: Array<ParcelUuid> = if (buggyAndroidVersion) {
                 deviceExtra.uuids
