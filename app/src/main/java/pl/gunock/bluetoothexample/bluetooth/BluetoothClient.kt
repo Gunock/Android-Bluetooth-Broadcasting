@@ -16,33 +16,33 @@ class BluetoothClient(
         const val TAG = "BluetoothClient"
     }
 
-    private var mOnConnectionSuccessListener: (suspend (BluetoothSocket) -> Unit)? = null
+    private var onConnectionSuccessListener: (suspend (BluetoothSocket) -> Unit)? = null
 
-    private var mOnConnectionFailureListener: (suspend (BluetoothSocket) -> Unit)? = null
+    private var onConnectionFailureListener: (suspend (BluetoothSocket) -> Unit)? = null
 
-    private var mOnDisconnectionListener: ((BluetoothSocket) -> Unit)? = null
+    private var onDisconnectionListener: ((BluetoothSocket) -> Unit)? = null
 
-    private var mOnDataListener: (suspend (ByteArray) -> Unit)? = onDataListener
+    private var onDataListener: (suspend (ByteArray) -> Unit)? = onDataListener
 
-    private var mStop: Boolean = false
+    private var stop: Boolean = false
 
-    private val mSocket: BluetoothSocket =
+    private val socket: BluetoothSocket =
         connectedDevice.createRfcommSocketToServiceRecord(serviceUUID)
 
     fun setOnConnectionSuccessListener(listener: (suspend (BluetoothSocket) -> Unit)?) {
-        mOnConnectionSuccessListener = listener
+        onConnectionSuccessListener = listener
     }
 
     fun setOnConnectionFailureListener(listener: (suspend (BluetoothSocket) -> Unit)?) {
-        mOnConnectionFailureListener = listener
+        onConnectionFailureListener = listener
     }
 
     fun setOnDisconnectionListener(listener: ((BluetoothSocket) -> Unit)?) {
-        mOnDisconnectionListener = listener
+        onDisconnectionListener = listener
     }
 
     fun setOnDataListener(listener: (suspend (ByteArray) -> Unit)?) {
-        mOnDataListener = listener
+        onDataListener = listener
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
@@ -52,21 +52,21 @@ class BluetoothClient(
         }
 
         CoroutineScope(Dispatchers.IO).launch {
-            while (!mStop) {
+            while (!stop) {
                 delay(500)
                 checkConnectionState()
             }
         }
 
         var buffer: ByteArray = byteArrayOf()
-        while (!mStop) {
-            if (!mSocket.isConnected) {
+        while (!stop) {
+            if (!socket.isConnected) {
                 Log.i(TAG, "Socket disconnected")
                 break
             }
 
             try {
-                val available = mSocket.inputStream.available()
+                val available = socket.inputStream.available()
                 if (available == 0 && buffer.isEmpty()) {
                     delay(50)
                     continue
@@ -74,7 +74,7 @@ class BluetoothClient(
                 Log.i(TAG, "Available data: $available")
 
                 val subBuffer = ByteArray(available)
-                mSocket.inputStream.read(subBuffer)
+                socket.inputStream.read(subBuffer)
                 buffer += subBuffer
             } catch (ignored: IOException) {
                 Log.i(TAG, "Socket suddenly closed")
@@ -96,50 +96,50 @@ class BluetoothClient(
             }
 
             withContext(Dispatchers.Main) {
-                mOnDataListener?.invoke(messageBuffer)
+                onDataListener?.invoke(messageBuffer)
             }
         }
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
     suspend fun disconnect() {
-        mStop = true
-        mSocket.close()
+        stop = true
+        socket.close()
         withContext(Dispatchers.Main) {
-            mOnDisconnectionListener?.invoke(mSocket)
+            onDisconnectionListener?.invoke(socket)
         }
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
     private suspend fun checkConnectionState() {
         try {
-            mSocket.outputStream.write(0)
+            socket.outputStream.write(0)
         } catch (ignored: IOException) {
             Log.i(TAG, "Socket connection closed")
-            withContext(Dispatchers.Main) { mOnDisconnectionListener?.invoke(mSocket) }
-            mStop = true
+            withContext(Dispatchers.Main) { onDisconnectionListener?.invoke(socket) }
+            stop = true
         }
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
     private suspend fun connect(): Boolean {
         try {
-            mSocket.connect()
+            socket.connect()
         } catch (ignored: IOException) {
             Log.i(TAG, "Connection failed")
-            mSocket.close()
+            socket.close()
         }
 
-        if (mSocket.isConnected) {
+        if (socket.isConnected) {
             Log.i(TAG, "Connected")
             withContext(Dispatchers.Main) {
-                mOnConnectionSuccessListener?.invoke(mSocket)
+                onConnectionSuccessListener?.invoke(socket)
             }
             return true
         } else {
             Log.w(TAG, "Connection failed")
             withContext(Dispatchers.Main) {
-                mOnConnectionFailureListener?.invoke(mSocket)
+                onConnectionFailureListener?.invoke(socket)
             }
             return false
         }

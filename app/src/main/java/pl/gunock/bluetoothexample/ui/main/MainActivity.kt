@@ -9,24 +9,24 @@ import pl.gunock.bluetoothexample.ui.client.ClientActivity
 import pl.gunock.bluetoothexample.ui.server.ServerActivity
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var mBinding: ContentMainBinding
+    private lateinit var binding: ContentMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val rootBinding = ActivityMainBinding.inflate(layoutInflater)
-        mBinding = rootBinding.content
+        binding = rootBinding.content
         setContentView(rootBinding.root)
 
         setUpButtons()
     }
 
     private fun setUpButtons() {
-        mBinding.btnOpenClient.setOnClickListener {
+        binding.btnOpenClient.setOnClickListener {
             val intent = Intent(applicationContext, ClientActivity::class.java)
             startActivity(intent)
         }
 
-        mBinding.btnOpenServer.setOnClickListener {
+        binding.btnOpenServer.setOnClickListener {
             val intent = Intent(applicationContext, ServerActivity::class.java)
             startActivity(intent)
         }

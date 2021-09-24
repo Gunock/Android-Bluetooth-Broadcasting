@@ -34,21 +34,21 @@ class ClientActivity : AppCompatActivity() {
 
     private val viewModel by viewModels<ClientViewModel> { getViewModelFactory() }
 
-    private lateinit var mBinding: ContentClientBinding
+    private lateinit var binding: ContentClientBinding
 
-    private lateinit var mPickDeviceDialogViewModel: PickDeviceDialogViewModel
+    private lateinit var pickDeviceDialogViewModel: PickDeviceDialogViewModel
 
-    private val mEnableBluetoothActivityResultLauncher =
+    private val enableBluetoothActivityResultLauncher =
         registerForActivityResult(this::handleEnableBluetoothResult)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val rootBinding = ActivityClientBinding.inflate(layoutInflater)
-        mBinding = rootBinding.content
+        binding = rootBinding.content
         setContentView(rootBinding.root)
 
 
-        mPickDeviceDialogViewModel =
+        pickDeviceDialogViewModel =
             ViewModelProvider(this).get(PickDeviceDialogViewModel::class.java)
 
         setUpObservers()
@@ -111,7 +111,7 @@ class ClientActivity : AppCompatActivity() {
 
         if (!bluetoothAdapter.isEnabled) {
             val enableBluetoothIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-            mEnableBluetoothActivityResultLauncher.launch(enableBluetoothIntent)
+            enableBluetoothActivityResultLauncher.launch(enableBluetoothIntent)
         }
     }
 
@@ -119,7 +119,7 @@ class ClientActivity : AppCompatActivity() {
         val bluetoothManager =
             baseContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
 
-        mBinding.btnPickServerDevice.setOnClickListener {
+        binding.btnPickServerDevice.setOnClickListener {
             PickDeviceDialogFragment(
                 ParcelUuid(ClientViewModel.SERVICE_UUID),
                 bluetoothManager
@@ -128,14 +128,14 @@ class ClientActivity : AppCompatActivity() {
                 show(supportFragmentManager, PickDeviceDialogFragment.TAG)
             }
 
-            mPickDeviceDialogViewModel.bluetoothDevice.postValue(null)
-            mPickDeviceDialogViewModel.bluetoothDevice.observe(
+            pickDeviceDialogViewModel.bluetoothDevice.postValue(null)
+            pickDeviceDialogViewModel.bluetoothDevice.observe(
                 this,
                 this::observeDialogBluetoothDevice
             )
         }
 
-        mBinding.btnDisconnect.setOnClickListener {
+        binding.btnDisconnect.setOnClickListener {
             viewModel.stopClient()
         }
     }
@@ -147,16 +147,16 @@ class ClientActivity : AppCompatActivity() {
                 statusText = statusText.format(deviceName)
             }
 
-            mBinding.tvServerConnectionStatus.text = statusText
+            binding.tvServerConnectionStatus.text = statusText
         }
 
         viewModel.receivedText.observe(this) {
-            mBinding.tvMessagePreview.text = it
+            binding.tvMessagePreview.text = it
         }
     }
 
     private fun observeDialogBluetoothDevice(device: BluetoothDevice?) {
-        mPickDeviceDialogViewModel.bluetoothDevice.removeObservers(this)
+        pickDeviceDialogViewModel.bluetoothDevice.removeObservers(this)
         viewModel.setClient(device ?: return)
         viewModel.startClient()
     }

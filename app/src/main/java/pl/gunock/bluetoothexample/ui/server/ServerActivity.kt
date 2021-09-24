@@ -28,18 +28,18 @@ class ServerActivity : AppCompatActivity() {
 
     private val viewModel by viewModels<ServerViewModel> { getViewModelFactory() }
 
-    private lateinit var mBinding: ContentServerBinding
+    private lateinit var binding: ContentServerBinding
 
-    private val mDiscoverableActivityResultLauncher =
+    private val discoverableActivityResultLauncher =
         registerForActivityResult(this::handleDiscoverableResult)
 
-    private val mEnableBluetoothActivityResultLauncher =
+    private val enableBluetoothActivityResultLauncher =
         registerForActivityResult(this::handleEnableBluetoothResult)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val rootBinding = ActivityServerBinding.inflate(layoutInflater)
-        mBinding = rootBinding.content
+        binding = rootBinding.content
         setContentView(rootBinding.root)
 
         setUpObservers()
@@ -85,7 +85,7 @@ class ServerActivity : AppCompatActivity() {
 
     private fun setUpObservers() {
         viewModel.serverStatus.observe(this) {
-            mBinding.tvServerStatus.text = getString(it)
+            binding.tvServerStatus.text = getString(it)
         }
 
         viewModel.message.observe(this) {
@@ -108,26 +108,26 @@ class ServerActivity : AppCompatActivity() {
 
         if (bluetoothAdapter?.isEnabled == false) {
             val enableBluetoothIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-            mEnableBluetoothActivityResultLauncher.launch(enableBluetoothIntent)
+            enableBluetoothActivityResultLauncher.launch(enableBluetoothIntent)
         }
 
         viewModel.setServer(bluetoothAdapter)
     }
 
     private fun setUpListeners() {
-        mBinding.btnServerStart.setOnClickListener {
+        binding.btnServerStart.setOnClickListener {
             val discoverableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE)
             discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0)
 
-            mDiscoverableActivityResultLauncher.launch(discoverableIntent)
+            discoverableActivityResultLauncher.launch(discoverableIntent)
         }
 
-        mBinding.btnServerStop.setOnClickListener {
+        binding.btnServerStop.setOnClickListener {
             viewModel.stopServer()
         }
 
-        mBinding.btnSendMessage.setOnClickListener {
-            val message = mBinding.edMessage.text.toString()
+        binding.btnSendMessage.setOnClickListener {
+            val message = binding.edMessage.text.toString()
             viewModel.broadcastMessage(message)
         }
     }

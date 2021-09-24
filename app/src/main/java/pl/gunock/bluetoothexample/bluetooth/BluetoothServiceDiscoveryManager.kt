@@ -16,18 +16,18 @@ import pl.gunock.bluetoothexample.extensions.order
 import java.nio.ByteOrder
 
 class BluetoothServiceDiscoveryManager(
-    private val mContext: Context,
-    private val mExpectedUuids: Collection<ParcelUuid>
+    private val context: Context,
+    private val expectedUuids: Collection<ParcelUuid>
 ) {
     private companion object {
         const val TAG = "ServiceDiscoveryManager"
     }
 
-    val devices: LiveData<Set<BluetoothDevice>> get() = mDevices
+    val devices: LiveData<Set<BluetoothDevice>> get() = _devices
 
-    private val mDevices: MutableLiveData<Set<BluetoothDevice>> = MutableLiveData(setOf())
+    private val _devices: MutableLiveData<Set<BluetoothDevice>> = MutableLiveData(setOf())
 
-    private val mDevicesToFetch: MutableList<BluetoothDevice> = mutableListOf()
+    private val devicesToFetch: MutableList<BluetoothDevice> = mutableListOf()
 
     val receiver: BroadcastReceiver = ServiceDiscoveryBroadcastReceiver()
 
@@ -37,10 +37,10 @@ class BluetoothServiceDiscoveryManager(
         }
 
         val deviceList = devices.toMutableList()
-        mDevicesToFetch.clear()
-        mDevicesToFetch.addAll(deviceList)
+        devicesToFetch.clear()
+        devicesToFetch.addAll(deviceList)
 
-        val firstDevice: BluetoothDevice = mDevicesToFetch.removeFirst()
+        val firstDevice: BluetoothDevice = devicesToFetch.removeFirst()
         fetchDevicesUuidsWithSdp(firstDevice)
     }
 
@@ -60,13 +60,13 @@ class BluetoothServiceDiscoveryManager(
                     bluetoothDevice.fetchUuidsWithSdp()
                 } else {
                     Log.i(TAG, "${bluetoothDevice.name} is unreachable")
-                    val nextDevice = mDevicesToFetch.removeFirstOrNull()
+                    val nextDevice = devicesToFetch.removeFirstOrNull()
                     fetchDevicesUuidsWithSdp(nextDevice)
                 }
             }
         }
 
-        val gatt = bluetoothDevice.connectGatt(mContext, false, callback)
+        val gatt = bluetoothDevice.connectGatt(context, false, callback)
         gatt.connect()
     }
 
@@ -93,18 +93,18 @@ class BluetoothServiceDiscoveryManager(
                 deviceExtra.uuids
             }
 
-            val hasService = uuids.any { it in mExpectedUuids }
+            val hasService = uuids.any { it in expectedUuids }
 
             Log.d(TAG, "${deviceExtra.name} : ${uuids.map { it.uuid }}")
             Log.d(TAG, "${deviceExtra.name} : $hasService")
             val newDevices = if (hasService) {
-                mDevices.value!! + deviceExtra
+                _devices.value!! + deviceExtra
             } else {
-                mDevices.value!! - deviceExtra
+                _devices.value!! - deviceExtra
             }
-            mDevices.postValue(newDevices)
+            _devices.postValue(newDevices)
 
-            val nextDevice = mDevicesToFetch.removeFirstOrNull()
+            val nextDevice = devicesToFetch.removeFirstOrNull()
             fetchDevicesUuidsWithSdp(nextDevice)
         }
     }

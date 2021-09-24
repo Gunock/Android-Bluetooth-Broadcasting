@@ -16,17 +16,17 @@ class ClientViewModel : ViewModel() {
         val SERVICE_UUID: UUID = UUID.fromString("2f58e6c0-5ccf-4d2f-afec-65a2d98e2141")
     }
 
-    private var mBluetoothClient: BluetoothClient? = null
+    private var bluetoothClient: BluetoothClient? = null
 
-    private val mClientStatus: MutableLiveData<Pair<Int, String?>> =
+    private val _clientStatus: MutableLiveData<Pair<Int, String?>> =
         MutableLiveData(Pair(R.string.activity_client_disconnected, null))
-    val clientStatus: LiveData<Pair<Int, String?>> = mClientStatus
+    val clientStatus: LiveData<Pair<Int, String?>> = _clientStatus
 
-    private val mReceivedText: MutableLiveData<String> = MutableLiveData()
-    val receivedText: LiveData<String> = mReceivedText
+    private val _receivedText: MutableLiveData<String> = MutableLiveData()
+    val receivedText: LiveData<String> = _receivedText
 
-    private val mMessage: MutableLiveData<String> = MutableLiveData()
-    val message: LiveData<String> = mMessage
+    private val _message: MutableLiveData<String> = MutableLiveData()
+    val message: LiveData<String> = _message
 
 
     fun setClient(device: BluetoothDevice) {
@@ -36,33 +36,33 @@ class ClientViewModel : ViewModel() {
         ) {
             val text = it.decodeToString()
             Log.i(TAG, "Received message '$text'")
-            mReceivedText.postValue(text)
+            _receivedText.postValue(text)
         }
 
         bluetoothClient.setOnConnectionSuccessListener {
-            mClientStatus.postValue(Pair(R.string.activity_client_connected, it.remoteDevice.name))
+            _clientStatus.postValue(Pair(R.string.activity_client_connected, it.remoteDevice.name))
         }
 
         bluetoothClient.setOnConnectionFailureListener {
-            mClientStatus.postValue(Pair(R.string.activity_client_disconnected, null))
+            _clientStatus.postValue(Pair(R.string.activity_client_disconnected, null))
         }
 
         bluetoothClient.setOnDisconnectionListener {
-            mClientStatus.postValue(Pair(R.string.activity_client_disconnected, null))
+            _clientStatus.postValue(Pair(R.string.activity_client_disconnected, null))
         }
 
-        mBluetoothClient = bluetoothClient
+        this.bluetoothClient = bluetoothClient
     }
 
     fun startClient() {
         viewModelScope.launch(Dispatchers.IO) {
             Log.i(TAG, "Started listening")
-            mBluetoothClient?.startLoop()
+            bluetoothClient?.startLoop()
         }
     }
 
     fun stopClient() {
-        viewModelScope.launch(Dispatchers.Default) { mBluetoothClient?.disconnect() }
+        viewModelScope.launch(Dispatchers.Default) { bluetoothClient?.disconnect() }
         Log.i(TAG, "Client disconnected")
     }
 
