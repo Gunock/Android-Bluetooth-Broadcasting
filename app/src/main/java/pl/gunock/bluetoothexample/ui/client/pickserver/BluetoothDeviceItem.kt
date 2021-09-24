@@ -1,4 +1,4 @@
-package pl.gunock.bluetoothexample.ui.pickserver
+package pl.gunock.bluetoothexample.ui.client.pickserver
 
 import android.bluetooth.BluetoothDevice
 

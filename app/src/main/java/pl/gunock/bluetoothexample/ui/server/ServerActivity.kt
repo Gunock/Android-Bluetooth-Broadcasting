@@ -3,7 +3,6 @@ package pl.gunock.bluetoothexample.ui.server
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -14,19 +13,24 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import dagger.hilt.android.AndroidEntryPoint
 import pl.gunock.bluetoothexample.databinding.ActivityServerBinding
 import pl.gunock.bluetoothexample.databinding.ContentServerBinding
-import pl.gunock.bluetoothexample.extensions.getViewModelFactory
 import pl.gunock.bluetoothexample.extensions.registerForActivityResult
+import javax.inject.Inject
 
-class ServerActivity : AppCompatActivity() {
+@AndroidEntryPoint
+class ServerActivity @Inject constructor() : AppCompatActivity() {
     private companion object {
         const val TAG = "MainActivity"
 
         const val BT_PERMISSION_RESULT_CODE = 1
     }
 
-    private val viewModel by viewModels<ServerViewModel> { getViewModelFactory() }
+    private val viewModel: ServerViewModel by viewModels()
+
+    @Inject
+    lateinit var bluetoothManager: BluetoothManager
 
     private lateinit var binding: ContentServerBinding
 
@@ -94,8 +98,6 @@ class ServerActivity : AppCompatActivity() {
     }
 
     private fun setUpBluetooth() {
-        val bluetoothManager =
-            baseContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         val bluetoothAdapter = bluetoothManager.adapter
 
         if (bluetoothAdapter == null) {
@@ -141,7 +143,7 @@ class ServerActivity : AppCompatActivity() {
         }
     }
 
-    private fun handleEnableBluetoothResult(result: ActivityResult){
+    private fun handleEnableBluetoothResult(result: ActivityResult) {
         if (result.resultCode == RESULT_CANCELED) {
             Log.d(TAG, "User refused REQUEST_ENABLE_BT")
         }

@@ -3,13 +3,16 @@ package pl.gunock.bluetoothexample.ui.client
 import android.bluetooth.BluetoothDevice
 import android.util.Log
 import androidx.lifecycle.*
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import pl.gunock.bluetoothexample.R
 import pl.gunock.bluetoothexample.bluetooth.BluetoothClient
 import java.util.*
+import javax.inject.Inject
 
-class ClientViewModel : ViewModel() {
+@HiltViewModel
+class ClientViewModel @Inject constructor() : ViewModel() {
     companion object {
         private const val TAG = "ClientViewModel"
 

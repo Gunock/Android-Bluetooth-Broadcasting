@@ -4,7 +4,6 @@ import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -18,21 +17,26 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
+import dagger.hilt.android.AndroidEntryPoint
 import pl.gunock.bluetoothexample.R
 import pl.gunock.bluetoothexample.databinding.ActivityClientBinding
 import pl.gunock.bluetoothexample.databinding.ContentClientBinding
-import pl.gunock.bluetoothexample.extensions.getViewModelFactory
 import pl.gunock.bluetoothexample.extensions.registerForActivityResult
-import pl.gunock.bluetoothexample.ui.pickserver.PickDeviceDialogFragment
-import pl.gunock.bluetoothexample.ui.pickserver.PickDeviceDialogViewModel
+import pl.gunock.bluetoothexample.ui.client.pickserver.PickDeviceDialogFragment
+import pl.gunock.bluetoothexample.ui.client.pickserver.PickDeviceDialogViewModel
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class ClientActivity : AppCompatActivity() {
     private companion object {
         const val TAG = "MainActivity"
         const val BT_PERMISSION_RESULT_CODE = 1
     }
 
-    private val viewModel by viewModels<ClientViewModel> { getViewModelFactory() }
+    private val viewModel: ClientViewModel by viewModels()
+
+    @Inject
+    lateinit var bluetoothManager: BluetoothManager
 
     private lateinit var binding: ContentClientBinding
 
@@ -95,9 +99,6 @@ class ClientActivity : AppCompatActivity() {
     }
 
     private fun setUpBluetooth() {
-        val bluetoothManager =
-            baseContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-
         val bluetoothAdapter = bluetoothManager.adapter
 
         if (bluetoothAdapter == null) {
@@ -116,13 +117,9 @@ class ClientActivity : AppCompatActivity() {
     }
 
     private fun setUpListeners() {
-        val bluetoothManager =
-            baseContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-
         binding.btnPickServerDevice.setOnClickListener {
             PickDeviceDialogFragment(
-                ParcelUuid(ClientViewModel.SERVICE_UUID),
-                bluetoothManager
+                ParcelUuid(ClientViewModel.SERVICE_UUID)
             ).apply {
                 setStyle(DialogFragment.STYLE_NORMAL, R.style.Theme_BluetoothTest_Dialog)
                 show(supportFragmentManager, PickDeviceDialogFragment.TAG)

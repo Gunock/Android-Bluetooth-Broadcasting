@@ -1,4 +1,4 @@
-package pl.gunock.bluetoothexample.ui.pickserver
+package pl.gunock.bluetoothexample.ui.client.pickserver
 
 import android.app.Dialog
 import android.bluetooth.BluetoothDevice
@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothManager
 import android.content.IntentFilter
 import android.os.Bundle
 import android.os.ParcelUuid
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,34 +15,44 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import pl.gunock.bluetoothexample.databinding.DialogFragmentPickDeviceBinding
 import pl.gunock.bluetoothexample.bluetooth.BluetoothServiceDiscoveryManager
+import javax.inject.Inject
 
 
+@AndroidEntryPoint
 class PickDeviceDialogFragment(
-    serviceUuid: ParcelUuid,
-    private val bluetoothManager: BluetoothManager
+    private val serviceUuid: ParcelUuid,
 ) : DialogFragment() {
     companion object {
         const val TAG = "PickDeviceDialogFrag"
     }
 
-    private lateinit var pickDeviceDialogViewModel: PickDeviceDialogViewModel
+    private lateinit var viewModel: PickDeviceDialogViewModel
 
     private lateinit var binding: DialogFragmentPickDeviceBinding
 
     private lateinit var recyclerViewAdapter: BluetoothDeviceItemsAdapter
 
-    private val serviceDiscoveryManager by lazy {
-        BluetoothServiceDiscoveryManager(requireContext(), listOf(serviceUuid))
-    }
+    @Inject
+    lateinit var bluetoothManager: BluetoothManager
+
+    @Inject
+    lateinit var serviceDiscoveryManager: BluetoothServiceDiscoveryManager
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        pickDeviceDialogViewModel =
+        serviceDiscoveryManager.setExpectedUuids(listOf(serviceUuid))
+
+        viewModel =
             ViewModelProvider(requireActivity()).get(PickDeviceDialogViewModel::class.java)
+
+        viewModel.message.observe(this) {
+            Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
+        }
 
         val dialog = super.onCreateDialog(savedInstanceState)
         dialog.setTitle("Pick server device")
@@ -57,7 +66,6 @@ class PickDeviceDialogFragment(
     ): View {
         binding = DialogFragmentPickDeviceBinding.inflate(inflater)
 
-
         setUpRecyclerView()
 
         return binding.root
@@ -67,7 +75,7 @@ class PickDeviceDialogFragment(
         super.onResume()
 
         requireActivity().registerReceiver(
-            serviceDiscoveryManager.receiver,
+            serviceDiscoveryManager.getBroadcastReceiver(),
             IntentFilter(BluetoothDevice.ACTION_UUID)
         )
     }
@@ -75,20 +83,12 @@ class PickDeviceDialogFragment(
     override fun onPause() {
         super.onPause()
 
-        requireActivity().unregisterReceiver(serviceDiscoveryManager.receiver)
+        requireActivity().unregisterReceiver(serviceDiscoveryManager.getBroadcastReceiver())
     }
 
     private fun setUpRecyclerView() {
         recyclerViewAdapter = BluetoothDeviceItemsAdapter({ item: BluetoothDeviceItem ->
-            if (!item.isAvailable) {
-                Toast.makeText(
-                    requireContext(),
-                    "Selected device is not available!",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                pickDeviceDialogViewModel.bluetoothDevice.postValue(item.bluetoothDevice)
-                Log.i(TAG, "Picked : ${item.bluetoothDevice.name}")
+            if (viewModel.pickBluetoothDeviceItem(item)) {
                 dismiss()
             }
         })
@@ -105,7 +105,7 @@ class PickDeviceDialogFragment(
 
         lifecycleScope.launch(Dispatchers.IO) { checkDeviceStates() }
 
-        serviceDiscoveryManager.devices.observe(this) { collection ->
+        serviceDiscoveryManager.getBluetoothDevices().observe(this) { collection ->
             lifecycleScope.launch(Dispatchers.Default) {
                 val devices = collection.map { BluetoothDeviceItem(it, true) }
                 recyclerViewAdapter.submitCollection(devices)

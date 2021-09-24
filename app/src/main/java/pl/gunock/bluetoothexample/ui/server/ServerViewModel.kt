@@ -6,13 +6,16 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import pl.gunock.bluetoothexample.R
 import pl.gunock.bluetoothexample.bluetooth.BluetoothServer
 import java.util.*
+import javax.inject.Inject
 
-class ServerViewModel : ViewModel() {
+@HiltViewModel
+class ServerViewModel @Inject constructor() : ViewModel() {
     private companion object {
         const val TAG = "ServerViewModel"
 
