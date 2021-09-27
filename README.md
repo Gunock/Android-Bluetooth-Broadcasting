@@ -86,22 +86,26 @@ A helper class for acquiring bluetooth devices which host desired service.
 1. Constructor:
 ``` kotlin
 BluetoothServiceDiscoveryManager(
-    context,
-    listOf(serviceUuid)
+    context
 )
 ```
-2. You must register receiver (without doing it manager can't handle *fetchUuidsWithSdp* results):
+2. You must set which service UUIDs to expect:
+```
+serviceDiscoveryManager.setExpectedUuids(/* collection of UUIDs */)
+```
+
+3. You must register receiver (without doing it manager can't handle *fetchUuidsWithSdp* results):
 ``` kotlin
 activity.registerReceiver(
     serviceDiscoveryManager.receiver,
     IntentFilter(BluetoothDevice.ACTION_UUID)
 )
 ```
-3. Discover services on given devices:
+4. Discover services on given devices:
 ``` kotlin
 serviceDiscoveryManager.discoverServicesInDevices(pairedDevices)
 ```
-4. You can observe devices with desired services:
+5. You can observe devices with desired services:
 ``` kotlin
 serviceDiscoveryManager.devices.observe(this) { collection: Set<BluetoothDevice> ->
     // Do something
