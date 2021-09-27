@@ -114,6 +114,7 @@ serviceDiscoveryManager.devices.observe(this) { collection: Set<BluetoothDevice>
 * [ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel) - Store UI-related data that isn't destroyed on app rotations. Easily schedule asynchronous tasks for optimal execution.
 * [LiveData](https://developer.android.com/topic/libraries/architecture/livedata)- Build data objects that notify views when the underlying data changes.
 * [RecyclerView](https://developer.android.com/guide/topics/ui/layout/recyclerview?gclsrc=aw.ds&gclid=CjwKCAjwrPCGBhALEiwAUl9X03wCNk7bhvoxs_okW86jFVgc92QelSerqKyYmfEM54CbHOsKc3tYyxoCgRcQAvD_BwE) for custom list views.
+* [Hilt](https://developer.android.com/training/dependency-injection/hilt-android) - Dependency injection library recommended by Google.
 
 ## License
 Copyright (c) 2021 Tomasz Kiljańczyk
