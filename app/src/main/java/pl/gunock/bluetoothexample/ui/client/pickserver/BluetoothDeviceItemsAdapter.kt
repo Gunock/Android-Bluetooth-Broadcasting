@@ -1,32 +1,24 @@
 package pl.gunock.bluetoothexample.ui.client.pickserver
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import pl.gunock.bluetoothexample.databinding.ItemBluetoothDeviceBinding
 
 class BluetoothDeviceItemsAdapter(
+    context: Context,
     private val onItemClick: (item: BluetoothDeviceItem) -> Unit,
-    private val items: MutableList<BluetoothDeviceItem> = mutableListOf()
-) : RecyclerView.Adapter<BluetoothDeviceItemsAdapter.ViewHolder>() {
+) : ListAdapter<BluetoothDeviceItem, BluetoothDeviceItemsAdapter.ViewHolder>(DiffCallback()) {
 
-    suspend fun submitCollection(collection: Collection<BluetoothDeviceItem>) {
-        if (items.size == collection.size && items.containsAll(collection)) {
-            return
-        }
-
-        withContext(Dispatchers.Main) { notifyItemRangeRemoved(0, items.size) }
-        items.clear()
-        items.addAll(collection)
-        withContext(Dispatchers.Main) { notifyItemRangeInserted(0, items.size) }
-    }
+    private val inflater: LayoutInflater = LayoutInflater.from(context)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding =
-            ItemBluetoothDeviceBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            ItemBluetoothDeviceBinding.inflate(inflater, parent, false)
 
         return ViewHolder(binding)
     }
@@ -39,13 +31,13 @@ class BluetoothDeviceItemsAdapter(
         return -1
     }
 
-    override fun getItemCount() = items.size
+    override fun getItemCount() = currentList.size
 
     inner class ViewHolder(
         private val binding: ItemBluetoothDeviceBinding
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(position: Int) {
-            val item: BluetoothDeviceItem = items[position]
+            val item: BluetoothDeviceItem = currentList[position]
 
             if (item.isAvailable) {
                 binding.imvDeviceConnected.visibility = View.VISIBLE
@@ -62,4 +54,17 @@ class BluetoothDeviceItemsAdapter(
         }
     }
 
+    private class DiffCallback : DiffUtil.ItemCallback<BluetoothDeviceItem>() {
+        override fun areItemsTheSame(
+            oldItem: BluetoothDeviceItem,
+            newItem: BluetoothDeviceItem
+        ): Boolean =
+            oldItem.bluetoothDevice.address == newItem.bluetoothDevice.address
+
+        override fun areContentsTheSame(
+            oldItem: BluetoothDeviceItem,
+            newItem: BluetoothDeviceItem
+        ): Boolean =
+            oldItem == newItem
+    }
 }

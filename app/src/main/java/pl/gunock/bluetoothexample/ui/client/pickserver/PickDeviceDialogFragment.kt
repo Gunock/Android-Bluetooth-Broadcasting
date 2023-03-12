@@ -108,7 +108,7 @@ class PickDeviceDialogFragment(
         serviceDiscoveryManager.getBluetoothDevices().observe(this) { collection ->
             lifecycleScope.launch(Dispatchers.Default) {
                 val devices = collection.map { BluetoothDeviceItem(it, true) }
-                recyclerViewAdapter.submitCollection(devices)
+                recyclerViewAdapter.submitList(devices)
             }
         }
     }

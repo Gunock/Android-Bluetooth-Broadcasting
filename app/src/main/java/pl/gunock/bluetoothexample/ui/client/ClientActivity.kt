@@ -53,7 +53,7 @@ class ClientActivity : AppCompatActivity() {
 
 
         pickDeviceDialogViewModel =
-            ViewModelProvider(this).get(PickDeviceDialogViewModel::class.java)
+            ViewModelProvider(this)[PickDeviceDialogViewModel::class.java]
 
         setUpObservers()
         setUpListeners()
