@@ -10,7 +10,8 @@ import android.content.Intent
 import android.os.Build
 import android.os.ParcelUuid
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import pl.gunock.bluetoothexample.bluetooth.BluetoothServiceDiscoveryManager.Companion.TAG
 import pl.gunock.bluetoothexample.extensions.order
 import java.nio.ByteOrder
@@ -22,7 +23,7 @@ class BluetoothServiceDiscoveryManagerImpl(
 
     private val receiver: BroadcastReceiver = ServiceDiscoveryBroadcastReceiver()
 
-    private val devices: MutableLiveData<Set<BluetoothDevice>> = MutableLiveData(setOf())
+    private val bluetoothDevices: MutableStateFlow<Set<BluetoothDevice>> = MutableStateFlow(setOf())
 
     private val devicesToFetch: MutableList<BluetoothDevice> = mutableListOf()
 
@@ -56,8 +57,8 @@ class BluetoothServiceDiscoveryManagerImpl(
         return receiver
     }
 
-    override fun getBluetoothDevices(): MutableLiveData<Set<BluetoothDevice>> {
-        return devices
+    override fun getBluetoothDevices(): Flow<Set<BluetoothDevice>> {
+        return bluetoothDevices
     }
 
     private fun fetchDevicesUuidsWithSdp(bluetoothDevice: BluetoothDevice?) {
@@ -119,11 +120,11 @@ class BluetoothServiceDiscoveryManagerImpl(
             Log.d(TAG, "${deviceExtra.name} : ${uuids.map { it.uuid }}")
             Log.d(TAG, "${deviceExtra.name} : $hasService")
             val newDevices = if (hasService) {
-                devices.value!! + deviceExtra
+                bluetoothDevices.value + deviceExtra
             } else {
-                devices.value!! - deviceExtra
+                bluetoothDevices.value - deviceExtra
             }
-            devices.postValue(newDevices)
+            bluetoothDevices.value = newDevices
 
             val nextDevice = devicesToFetch.removeFirstOrNull()
             fetchDevicesUuidsWithSdp(nextDevice)

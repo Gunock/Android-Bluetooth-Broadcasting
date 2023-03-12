@@ -3,7 +3,7 @@ package pl.gunock.bluetoothexample.bluetooth
 import android.bluetooth.BluetoothDevice
 import android.content.BroadcastReceiver
 import android.os.ParcelUuid
-import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.flow.Flow
 
 interface BluetoothServiceDiscoveryManager {
     companion object {
@@ -16,6 +16,6 @@ interface BluetoothServiceDiscoveryManager {
 
     fun getBroadcastReceiver(): BroadcastReceiver
 
-    fun getBluetoothDevices(): MutableLiveData<Set<BluetoothDevice>>
+    fun getBluetoothDevices(): Flow<Set<BluetoothDevice>>
 
 }

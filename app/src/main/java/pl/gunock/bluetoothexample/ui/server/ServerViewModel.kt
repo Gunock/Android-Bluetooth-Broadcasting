@@ -2,12 +2,14 @@ package pl.gunock.bluetoothexample.ui.server
 
 import android.bluetooth.BluetoothAdapter
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import pl.gunock.bluetoothexample.R
 import pl.gunock.bluetoothexample.bluetooth.BluetoothServer
@@ -25,11 +27,12 @@ class ServerViewModel @Inject constructor() : ViewModel() {
 
     private var server: BluetoothServer? = null
 
-    private val _serverStatus: MutableLiveData<Int> = MutableLiveData(R.string.activity_server_server_off)
-    val serverStatus: LiveData<Int> = _serverStatus
+    private val _serverStatus: MutableStateFlow<Int> =
+        MutableStateFlow(R.string.activity_server_server_off)
+    val serverStatus: StateFlow<Int> = _serverStatus
 
-    private val _message: MutableLiveData<String> = MutableLiveData()
-    val message: LiveData<String> = _message
+    private val _message: MutableSharedFlow<String> = MutableSharedFlow()
+    val message: Flow<String> = _message
 
     fun setServer(bluetoothAdapter: BluetoothAdapter) {
         val bluetoothServer = BluetoothServer(
@@ -40,19 +43,19 @@ class ServerViewModel @Inject constructor() : ViewModel() {
 
         bluetoothServer.setOnConnectListener {
             val messageText = "${it.remoteDevice.name} has connected"
-            _message.postValue(messageText)
+            _message.tryEmit(messageText)
         }
 
         bluetoothServer.setOnDisconnectListener {
             val messageText = "${it.remoteDevice.name} has disconnected"
-            _message.postValue(messageText)
+            _message.tryEmit(messageText)
         }
 
         bluetoothServer.setOnStateChangeListener { isStopped ->
-            if(isStopped){
-                _serverStatus.postValue(R.string.activity_server_server_off)
+            if (isStopped) {
+                _serverStatus.value = R.string.activity_server_server_off
             } else {
-                _serverStatus.postValue(R.string.activity_server_server_on)
+                _serverStatus.value = R.string.activity_server_server_on
             }
         }
 

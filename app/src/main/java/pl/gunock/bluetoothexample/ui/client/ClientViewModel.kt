@@ -2,9 +2,14 @@ package pl.gunock.bluetoothexample.ui.client
 
 import android.bluetooth.BluetoothDevice
 import android.util.Log
-import androidx.lifecycle.*
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import pl.gunock.bluetoothexample.R
 import pl.gunock.bluetoothexample.bluetooth.BluetoothClient
@@ -21,16 +26,12 @@ class ClientViewModel @Inject constructor() : ViewModel() {
 
     private var bluetoothClient: BluetoothClient? = null
 
-    private val _clientStatus: MutableLiveData<Pair<Int, String?>> =
-        MutableLiveData(Pair(R.string.activity_client_disconnected, null))
-    val clientStatus: LiveData<Pair<Int, String?>> = _clientStatus
+    private val _clientStatus: MutableStateFlow<Pair<Int, String?>> =
+        MutableStateFlow(Pair(R.string.activity_client_disconnected, null))
+    val clientStatus: StateFlow<Pair<Int, String?>> = _clientStatus
 
-    private val _receivedText: MutableLiveData<String> = MutableLiveData()
-    val receivedText: LiveData<String> = _receivedText
-
-    private val _message: MutableLiveData<String> = MutableLiveData()
-    val message: LiveData<String> = _message
-
+    private val _receivedText: MutableSharedFlow<String> = MutableSharedFlow()
+    val receivedText: Flow<String> = _receivedText
 
     fun setClient(device: BluetoothDevice) {
         val bluetoothClient = BluetoothClient(
@@ -39,19 +40,19 @@ class ClientViewModel @Inject constructor() : ViewModel() {
         ) {
             val text = it.decodeToString()
             Log.i(TAG, "Received message '$text'")
-            _receivedText.postValue(text)
+            _receivedText.tryEmit(text)
         }
 
         bluetoothClient.setOnConnectionSuccessListener {
-            _clientStatus.postValue(Pair(R.string.activity_client_connected, it.remoteDevice.name))
+            _clientStatus.value = Pair(R.string.activity_client_connected, it.remoteDevice.name)
         }
 
         bluetoothClient.setOnConnectionFailureListener {
-            _clientStatus.postValue(Pair(R.string.activity_client_disconnected, null))
+            _clientStatus.value = Pair(R.string.activity_client_disconnected, null)
         }
 
         bluetoothClient.setOnDisconnectionListener {
-            _clientStatus.postValue(Pair(R.string.activity_client_disconnected, null))
+            _clientStatus.value = Pair(R.string.activity_client_disconnected, null)
         }
 
         this.bluetoothClient = bluetoothClient

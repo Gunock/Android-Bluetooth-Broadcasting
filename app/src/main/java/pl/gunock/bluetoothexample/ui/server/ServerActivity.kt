@@ -12,8 +12,10 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import pl.gunock.bluetoothexample.databinding.ActivityServerBinding
 import pl.gunock.bluetoothexample.databinding.ContentServerBinding
 import pl.gunock.bluetoothexample.extensions.registerForActivityResult
@@ -88,13 +90,15 @@ class ServerActivity @Inject constructor() : AppCompatActivity() {
     }
 
     private fun setUpObservers() {
-        viewModel.serverStatus.observe(this) {
-            binding.tvServerStatus.text = getString(it)
-        }
+        viewModel.serverStatus
+            .onEach {
+                binding.tvServerStatus.text = getString(it)
+            }.launchIn(lifecycleScope)
 
-        viewModel.message.observe(this) {
-            Toast.makeText(baseContext, it, Toast.LENGTH_SHORT).show()
-        }
+        viewModel.message
+            .onEach {
+                Toast.makeText(baseContext, it, Toast.LENGTH_SHORT).show()
+            }.launchIn(lifecycleScope)
     }
 
     private fun setUpBluetooth() {
@@ -108,7 +112,7 @@ class ServerActivity @Inject constructor() : AppCompatActivity() {
             ).show()
         }
 
-        if (bluetoothAdapter?.isEnabled == false) {
+        if (!bluetoothAdapter.isEnabled) {
             val enableBluetoothIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             enableBluetoothActivityResultLauncher.launch(enableBluetoothIntent)
         }

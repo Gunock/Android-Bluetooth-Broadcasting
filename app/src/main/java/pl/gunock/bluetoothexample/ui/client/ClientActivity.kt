@@ -17,7 +17,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import pl.gunock.bluetoothexample.R
 import pl.gunock.bluetoothexample.databinding.ActivityClientBinding
 import pl.gunock.bluetoothexample.databinding.ContentClientBinding
@@ -125,11 +128,10 @@ class ClientActivity : AppCompatActivity() {
                 show(supportFragmentManager, PickDeviceDialogFragment.TAG)
             }
 
-            pickDeviceDialogViewModel.bluetoothDevice.postValue(null)
-            pickDeviceDialogViewModel.bluetoothDevice.observe(
-                this,
-                this::observeDialogBluetoothDevice
-            )
+            pickDeviceDialogViewModel.resetPickedBluetoothDevice()
+            pickDeviceDialogViewModel.bluetoothDevice
+                .onEach(this::observeDialogBluetoothDevice)
+                .launchIn(lifecycleScope)
         }
 
         binding.btnDisconnect.setOnClickListener {
@@ -138,22 +140,22 @@ class ClientActivity : AppCompatActivity() {
     }
 
     private fun setUpObservers() {
-        viewModel.clientStatus.observe(this) { (stringId, deviceName) ->
-            var statusText = getString(stringId)
-            if (deviceName != null) {
-                statusText = statusText.format(deviceName)
-            }
+        viewModel.clientStatus
+            .onEach { (stringId, deviceName) ->
+                var statusText = getString(stringId)
+                if (deviceName != null) {
+                    statusText = statusText.format(deviceName)
+                }
 
-            binding.tvServerConnectionStatus.text = statusText
-        }
+                binding.tvServerConnectionStatus.text = statusText
+            }.launchIn(lifecycleScope)
 
-        viewModel.receivedText.observe(this) {
-            binding.tvMessagePreview.text = it
-        }
+        viewModel.receivedText
+            .onEach { binding.tvMessagePreview.text = it }
+            .launchIn(lifecycleScope)
     }
 
     private fun observeDialogBluetoothDevice(device: BluetoothDevice?) {
-        pickDeviceDialogViewModel.bluetoothDevice.removeObservers(this)
         viewModel.setClient(device ?: return)
         viewModel.startClient()
     }
