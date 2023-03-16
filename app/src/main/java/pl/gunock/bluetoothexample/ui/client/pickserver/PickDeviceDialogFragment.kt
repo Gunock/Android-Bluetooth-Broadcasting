@@ -1,18 +1,15 @@
 package pl.gunock.bluetoothexample.ui.client.pickserver
 
-import android.Manifest
 import android.app.Dialog
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.content.IntentFilter
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.ParcelUuid
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -118,7 +115,7 @@ class PickDeviceDialogFragment(
 
         serviceDiscoveryManager.getBluetoothDevices()
             .onEach { collection ->
-                val devices = collection.map { BluetoothDeviceItem(it, true) }
+                val devices = collection.map { BluetoothDeviceItem(it.name, it.address, true) }
                 recyclerViewAdapter.submitList(devices)
             }.flowOn(Dispatchers.Default)
             .launchIn(lifecycleScope)

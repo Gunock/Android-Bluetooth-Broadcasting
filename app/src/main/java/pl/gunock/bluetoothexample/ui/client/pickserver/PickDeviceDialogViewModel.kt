@@ -1,6 +1,5 @@
 package pl.gunock.bluetoothexample.ui.client.pickserver
 
-import android.bluetooth.BluetoothDevice
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.Flow
@@ -13,9 +12,9 @@ class PickDeviceDialogViewModel : ViewModel() {
         const val TAG: String = "PickDeviceDialogViewModel"
     }
 
-    private val _bluetoothDevice: MutableStateFlow<BluetoothDevice?> = MutableStateFlow(null)
-    val bluetoothDevice: StateFlow<BluetoothDevice?>
-        get() = _bluetoothDevice
+    private val _bluetoothDeviceAddress: MutableStateFlow<String?> = MutableStateFlow(null)
+    val bluetoothDeviceAddress: StateFlow<String?>
+        get() = _bluetoothDeviceAddress
 
     private val _message: MutableSharedFlow<String> = MutableSharedFlow()
     val message: Flow<String>
@@ -23,15 +22,15 @@ class PickDeviceDialogViewModel : ViewModel() {
 
 
     fun resetPickedBluetoothDevice() {
-        _bluetoothDevice.value = null
+        _bluetoothDeviceAddress.value = null
     }
 
     fun pickBluetoothDeviceItem(item: BluetoothDeviceItem): Boolean {
         return if (!item.isAvailable) {
             false
         } else {
-            _bluetoothDevice.value = item.bluetoothDevice
-            Log.i(TAG, "Picked : ${item.bluetoothDevice.name}")
+            _bluetoothDeviceAddress.value = item.deviceAddress
+            Log.i(TAG, "Picked : ${item.deviceName}")
             true
         }
     }

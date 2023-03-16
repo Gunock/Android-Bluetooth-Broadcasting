@@ -1,9 +1,8 @@
 package pl.gunock.bluetoothexample.ui.client.pickserver
 
-import android.bluetooth.BluetoothDevice
-
 data class BluetoothDeviceItem(
-    val bluetoothDevice: BluetoothDevice,
+    val deviceName: String,
+    val deviceAddress: String,
     val isAvailable: Boolean
 ) {
     override fun equals(other: Any?): Boolean {
@@ -11,10 +10,10 @@ data class BluetoothDeviceItem(
             return false
         }
 
-        return bluetoothDevice == other.bluetoothDevice
+        return deviceAddress == other.deviceAddress
     }
 
     override fun hashCode(): Int {
-        return bluetoothDevice.hashCode()
+        return deviceAddress.hashCode()
     }
 }

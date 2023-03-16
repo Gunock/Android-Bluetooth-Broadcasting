@@ -2,7 +2,6 @@ package pl.gunock.bluetoothexample.ui.client
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -129,7 +128,7 @@ class ClientActivity : AppCompatActivity() {
             }
 
             pickDeviceDialogViewModel.resetPickedBluetoothDevice()
-            pickDeviceDialogViewModel.bluetoothDevice
+            pickDeviceDialogViewModel.bluetoothDeviceAddress
                 .onEach(this::observeDialogBluetoothDevice)
                 .launchIn(lifecycleScope)
         }
@@ -155,8 +154,11 @@ class ClientActivity : AppCompatActivity() {
             .launchIn(lifecycleScope)
     }
 
-    private fun observeDialogBluetoothDevice(device: BluetoothDevice?) {
-        viewModel.setClient(device ?: return)
+    private fun observeDialogBluetoothDevice(deviceAddress: String?) {
+        val bluetoothAdapter = bluetoothManager.adapter
+        val device = bluetoothAdapter.getRemoteDevice(deviceAddress ?: return)
+
+        viewModel.setClient(device)
         viewModel.startClient()
     }
 

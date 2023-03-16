@@ -47,7 +47,7 @@ class BluetoothDeviceItemsAdapter(
                 binding.imvDeviceDisconnected.visibility = View.VISIBLE
             }
 
-            binding.tvItemDeviceName.text = item.bluetoothDevice.name
+            binding.tvItemDeviceName.text = item.deviceName
             binding.root.setOnClickListener {
                 onItemClick(item)
             }
@@ -59,7 +59,7 @@ class BluetoothDeviceItemsAdapter(
             oldItem: BluetoothDeviceItem,
             newItem: BluetoothDeviceItem
         ): Boolean =
-            oldItem.bluetoothDevice.address == newItem.bluetoothDevice.address
+            oldItem.deviceAddress == newItem.deviceAddress
 
         override fun areContentsTheSame(
             oldItem: BluetoothDeviceItem,
