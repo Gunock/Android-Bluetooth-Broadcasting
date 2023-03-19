@@ -31,7 +31,7 @@ class ServerViewModel @Inject constructor() : ViewModel() {
         MutableStateFlow(R.string.activity_server_server_off)
     val serverStatus: StateFlow<Int> = _serverStatus
 
-    private val _message: MutableSharedFlow<String> = MutableSharedFlow()
+    private val _message: MutableSharedFlow<String> = MutableSharedFlow(replay = 1)
     val message: Flow<String> = _message
 
     fun setServer(bluetoothAdapter: BluetoothAdapter) {

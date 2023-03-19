@@ -16,7 +16,7 @@ class PickDeviceDialogViewModel : ViewModel() {
     val bluetoothDeviceAddress: StateFlow<String?>
         get() = _bluetoothDeviceAddress
 
-    private val _message: MutableSharedFlow<String> = MutableSharedFlow()
+    private val _message: MutableSharedFlow<String> = MutableSharedFlow(replay = 1)
     val message: Flow<String>
         get() = _message
 

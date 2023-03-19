@@ -30,14 +30,13 @@ class ClientViewModel @Inject constructor() : ViewModel() {
         MutableStateFlow(Pair(R.string.activity_client_disconnected, null))
     val clientStatus: StateFlow<Pair<Int, String?>> = _clientStatus
 
-    private val _receivedText: MutableSharedFlow<String> = MutableSharedFlow()
+    private val _receivedText: MutableSharedFlow<String> = MutableSharedFlow(replay = 1)
     val receivedText: Flow<String> = _receivedText
 
     fun setClient(device: BluetoothDevice) {
-        val bluetoothClient = BluetoothClient(
-            device,
-            SERVICE_UUID
-        ) {
+        val bluetoothClient = BluetoothClient(device, SERVICE_UUID)
+
+        bluetoothClient.setOnDataListener {
             val text = it.decodeToString()
             Log.i(TAG, "Received message '$text'")
             _receivedText.tryEmit(text)

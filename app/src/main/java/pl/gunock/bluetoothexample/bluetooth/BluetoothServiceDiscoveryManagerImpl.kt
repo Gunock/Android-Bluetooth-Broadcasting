@@ -25,8 +25,6 @@ class BluetoothServiceDiscoveryManagerImpl(
 
     private val bluetoothDevices: MutableStateFlow<Set<BluetoothDevice>> = MutableStateFlow(setOf())
 
-    private val devicesToFetch: MutableList<BluetoothDevice> = mutableListOf()
-
     private val expectedUuidsLock = ReentrantLock()
 
     private var expectedUuids: Collection<ParcelUuid> = listOf()
@@ -36,12 +34,7 @@ class BluetoothServiceDiscoveryManagerImpl(
             return
         }
 
-        val deviceList = devices.toMutableList()
-        devicesToFetch.clear()
-        devicesToFetch.addAll(deviceList)
-
-        val firstDevice: BluetoothDevice = devicesToFetch.removeFirst()
-        fetchDevicesUuidsWithSdp(firstDevice)
+        devices.forEach { fetchDevicesUuidsWithSdp(it) }
     }
 
     override fun setExpectedUuids(uuids: Collection<ParcelUuid>) {
@@ -61,9 +54,7 @@ class BluetoothServiceDiscoveryManagerImpl(
         return bluetoothDevices
     }
 
-    private fun fetchDevicesUuidsWithSdp(bluetoothDevice: BluetoothDevice?) {
-        bluetoothDevice ?: return
-
+    private fun fetchDevicesUuidsWithSdp(bluetoothDevice: BluetoothDevice) {
         val callback = object : BluetoothGattCallback() {
             override fun onConnectionStateChange(
                 gatt: BluetoothGatt?,
@@ -77,8 +68,6 @@ class BluetoothServiceDiscoveryManagerImpl(
                     bluetoothDevice.fetchUuidsWithSdp()
                 } else {
                     Log.i(TAG, "${bluetoothDevice.name} is unreachable")
-                    val nextDevice = devicesToFetch.removeFirstOrNull()
-                    fetchDevicesUuidsWithSdp(nextDevice)
                 }
             }
         }
@@ -96,7 +85,15 @@ class BluetoothServiceDiscoveryManagerImpl(
 
         private fun handleActionUuid(intent: Intent) {
             val deviceExtra: BluetoothDevice =
-                intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)!!
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                    @Suppress("DEPRECATION")
+                    intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)!!
+                } else {
+                    intent.getParcelableExtra(
+                        BluetoothDevice.EXTRA_DEVICE,
+                        BluetoothDevice::class.java
+                    )!!
+                }
 
             // This is a workaround for bluetooth problem in android 6.0.1 and 7
             // https://issuetracker.google.com/issues/37075233
@@ -119,15 +116,12 @@ class BluetoothServiceDiscoveryManagerImpl(
 
             Log.d(TAG, "${deviceExtra.name} : ${uuids.map { it.uuid }}")
             Log.d(TAG, "${deviceExtra.name} : $hasService")
-            val newDevices = if (hasService) {
-                bluetoothDevices.value + deviceExtra
-            } else {
-                bluetoothDevices.value - deviceExtra
-            }
-            bluetoothDevices.value = newDevices
 
-            val nextDevice = devicesToFetch.removeFirstOrNull()
-            fetchDevicesUuidsWithSdp(nextDevice)
+            if (hasService) {
+                bluetoothDevices.value += deviceExtra
+            } else {
+                bluetoothDevices.value -= deviceExtra
+            }
         }
     }
 

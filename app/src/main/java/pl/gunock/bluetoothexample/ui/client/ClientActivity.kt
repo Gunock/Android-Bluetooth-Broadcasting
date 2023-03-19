@@ -128,9 +128,6 @@ class ClientActivity : AppCompatActivity() {
             }
 
             pickDeviceDialogViewModel.resetPickedBluetoothDevice()
-            pickDeviceDialogViewModel.bluetoothDeviceAddress
-                .onEach(this::observeDialogBluetoothDevice)
-                .launchIn(lifecycleScope)
         }
 
         binding.btnDisconnect.setOnClickListener {
@@ -152,6 +149,17 @@ class ClientActivity : AppCompatActivity() {
         viewModel.receivedText
             .onEach { binding.tvMessagePreview.text = it }
             .launchIn(lifecycleScope)
+
+        pickDeviceDialogViewModel.bluetoothDeviceAddress
+            .onEach(this::observeDialogBluetoothDevice)
+            .launchIn(lifecycleScope)
+
+        pickDeviceDialogViewModel.message
+            .onEach {
+                if (it.isNotBlank()) {
+                    Toast.makeText(baseContext, it, Toast.LENGTH_SHORT).show()
+                }
+            }.launchIn(lifecycleScope)
     }
 
     private fun observeDialogBluetoothDevice(deviceAddress: String?) {

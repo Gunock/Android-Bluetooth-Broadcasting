@@ -9,8 +9,7 @@ import java.util.*
 
 class BluetoothClient(
     connectedDevice: BluetoothDevice,
-    serviceUUID: UUID,
-    onDataListener: suspend (ByteArray) -> Unit
+    serviceUUID: UUID
 ) {
     private companion object {
         const val TAG = "BluetoothClient"
@@ -22,7 +21,7 @@ class BluetoothClient(
 
     private var onDisconnectionListener: ((BluetoothSocket) -> Unit)? = null
 
-    private var onDataListener: (suspend (ByteArray) -> Unit)? = onDataListener
+    private var onDataListener: (suspend (ByteArray) -> Unit)? = null
 
     private var stop: Boolean = false
 
@@ -53,7 +52,7 @@ class BluetoothClient(
 
         CoroutineScope(Dispatchers.IO).launch {
             while (!stop) {
-                delay(500)
+                delay(1000)
                 checkConnectionState()
             }
         }
@@ -126,7 +125,6 @@ class BluetoothClient(
         try {
             socket.connect()
         } catch (ignored: IOException) {
-            Log.i(TAG, "Connection failed")
             socket.close()
         }
 

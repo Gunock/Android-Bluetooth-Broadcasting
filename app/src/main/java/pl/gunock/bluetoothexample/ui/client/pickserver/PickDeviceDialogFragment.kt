@@ -9,7 +9,6 @@ import android.os.ParcelUuid
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -52,13 +51,6 @@ class PickDeviceDialogFragment(
 
         viewModel =
             ViewModelProvider(requireActivity())[PickDeviceDialogViewModel::class.java]
-
-        viewModel.message
-            .onEach {
-                if (it.isNotBlank()) {
-                    Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
-                }
-            }.launchIn(lifecycleScope)
 
         val dialog = super.onCreateDialog(savedInstanceState)
         dialog.setTitle("Pick server device")
