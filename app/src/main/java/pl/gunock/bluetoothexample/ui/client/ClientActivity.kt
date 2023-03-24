@@ -23,7 +23,7 @@ import kotlinx.coroutines.flow.onEach
 import pl.gunock.bluetoothexample.R
 import pl.gunock.bluetoothexample.databinding.ActivityClientBinding
 import pl.gunock.bluetoothexample.databinding.ContentClientBinding
-import pl.gunock.bluetoothexample.extensions.registerForActivityResult
+import pl.gunock.bluetoothexample.shared.extensions.registerForActivityResult
 import pl.gunock.bluetoothexample.ui.client.pickserver.PickDeviceDialogFragment
 import pl.gunock.bluetoothexample.ui.client.pickserver.PickDeviceDialogViewModel
 import javax.inject.Inject
@@ -57,8 +57,8 @@ class ClientActivity : AppCompatActivity() {
         pickDeviceDialogViewModel =
             ViewModelProvider(this)[PickDeviceDialogViewModel::class.java]
 
-        setUpObservers()
-        setUpListeners()
+        setupObservers()
+        setupListeners()
 
         val permissions: MutableList<String> = mutableListOf()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -73,7 +73,7 @@ class ClientActivity : AppCompatActivity() {
         }
 
         if (permissions.isEmpty()) {
-            setUpBluetooth()
+            setupBluetooth()
 
         } else {
             requestPermissions(permissions.toTypedArray(), BT_PERMISSION_RESULT_CODE)
@@ -97,10 +97,10 @@ class ClientActivity : AppCompatActivity() {
             return
         }
 
-        setUpBluetooth()
+        setupBluetooth()
     }
 
-    private fun setUpBluetooth() {
+    private fun setupBluetooth() {
         val bluetoothAdapter = bluetoothManager.adapter
 
         if (bluetoothAdapter == null) {
@@ -118,7 +118,7 @@ class ClientActivity : AppCompatActivity() {
         }
     }
 
-    private fun setUpListeners() {
+    private fun setupListeners() {
         binding.btnPickServerDevice.setOnClickListener {
             PickDeviceDialogFragment(
                 ParcelUuid(ClientViewModel.SERVICE_UUID)
@@ -135,7 +135,7 @@ class ClientActivity : AppCompatActivity() {
         }
     }
 
-    private fun setUpObservers() {
+    private fun setupObservers() {
         viewModel.clientStatus
             .onEach { (stringId, deviceName) ->
                 var statusText = getString(stringId)

@@ -49,8 +49,9 @@ dependencies {
     // AndroidX
     implementation "androidx.core:core-ktx:$androidXCoreVersion"
     implementation "androidx.appcompat:appcompat:$appCompatVersion"
+    implementation "androidx.activity:activity-ktx:$androidXActivityVersion"
+    implementation "androidx.annotation:annotation:$androidXAnnotatinVersion"
     implementation "androidx.constraintlayout:constraintlayout:$constraintLayoutVersion"
-    implementation "androidx.activity:activity-ktx:1.6.1"
     implementation "androidx.recyclerview:recyclerview:$recyclerViewVersion"
 
     // Hilt

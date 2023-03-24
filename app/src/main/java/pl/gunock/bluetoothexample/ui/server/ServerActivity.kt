@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import pl.gunock.bluetoothexample.databinding.ActivityServerBinding
 import pl.gunock.bluetoothexample.databinding.ContentServerBinding
-import pl.gunock.bluetoothexample.extensions.registerForActivityResult
+import pl.gunock.bluetoothexample.shared.extensions.registerForActivityResult
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -49,8 +49,8 @@ class ServerActivity @Inject constructor() : AppCompatActivity() {
         binding = rootBinding.content
         setContentView(rootBinding.root)
 
-        setUpObservers()
-        setUpListeners()
+        setupObservers()
+        setupListeners()
 
         val permissions: MutableList<String> = mutableListOf()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -64,7 +64,7 @@ class ServerActivity @Inject constructor() : AppCompatActivity() {
             }
         }
         if (permissions.isEmpty()) {
-            setUpBluetooth()
+            setupBluetooth()
         } else {
             requestPermissions(permissions.toTypedArray(), BT_PERMISSION_RESULT_CODE)
         }
@@ -87,10 +87,10 @@ class ServerActivity @Inject constructor() : AppCompatActivity() {
             return
         }
 
-        setUpBluetooth()
+        setupBluetooth()
     }
 
-    private fun setUpObservers() {
+    private fun setupObservers() {
         viewModel.serverStatus
             .onEach {
                 binding.tvServerStatus.text = getString(it)
@@ -102,7 +102,7 @@ class ServerActivity @Inject constructor() : AppCompatActivity() {
             }.launchIn(lifecycleScope)
     }
 
-    private fun setUpBluetooth() {
+    private fun setupBluetooth() {
         val bluetoothAdapter = bluetoothManager.adapter
 
         if (bluetoothAdapter == null) {
@@ -121,7 +121,7 @@ class ServerActivity @Inject constructor() : AppCompatActivity() {
         viewModel.setServer(bluetoothAdapter)
     }
 
-    private fun setUpListeners() {
+    private fun setupListeners() {
         binding.btnServerStart.setOnClickListener {
             val discoverableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE)
             discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0)

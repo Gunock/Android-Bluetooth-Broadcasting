@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import pl.gunock.bluetoothexample.R
-import pl.gunock.bluetoothexample.bluetooth.BluetoothClient
+import pl.gunock.bluetoothexample.shared.bluetooth.BluetoothClient
 import java.util.*
 import javax.inject.Inject
 
@@ -34,7 +34,8 @@ class ClientViewModel @Inject constructor() : ViewModel() {
     val receivedText: Flow<String> = _receivedText
 
     fun setClient(device: BluetoothDevice) {
-        val bluetoothClient = BluetoothClient(device, SERVICE_UUID)
+        val bluetoothSocket = device.createRfcommSocketToServiceRecord(SERVICE_UUID)
+        val bluetoothClient = BluetoothClient(bluetoothSocket)
 
         bluetoothClient.setOnDataListener {
             val text = it.decodeToString()

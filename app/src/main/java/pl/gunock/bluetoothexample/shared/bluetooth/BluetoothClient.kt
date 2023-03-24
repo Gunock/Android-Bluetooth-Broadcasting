@@ -1,6 +1,5 @@
-package pl.gunock.bluetoothexample.bluetooth
+package pl.gunock.bluetoothexample.shared.bluetooth
 
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.util.Log
 import kotlinx.coroutines.*
@@ -8,8 +7,7 @@ import java.io.IOException
 import java.util.*
 
 class BluetoothClient(
-    connectedDevice: BluetoothDevice,
-    serviceUUID: UUID
+    private val socket: BluetoothSocket
 ) {
     private companion object {
         const val TAG = "BluetoothClient"
@@ -24,9 +22,6 @@ class BluetoothClient(
     private var onDataListener: (suspend (ByteArray) -> Unit)? = null
 
     private var stop: Boolean = false
-
-    private val socket: BluetoothSocket =
-        connectedDevice.createRfcommSocketToServiceRecord(serviceUUID)
 
     fun setOnConnectionSuccessListener(listener: (suspend (BluetoothSocket) -> Unit)?) {
         onConnectionSuccessListener = listener
@@ -44,10 +39,9 @@ class BluetoothClient(
         onDataListener = listener
     }
 
-    @Suppress("BlockingMethodInNonBlockingContext")
-    suspend fun startLoop() {
+    suspend fun startLoop() = withContext(Dispatchers.IO) {
         if (!connect()) {
-            return
+            return@withContext
         }
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -128,18 +122,14 @@ class BluetoothClient(
             socket.close()
         }
 
-        if (socket.isConnected) {
+        return if (socket.isConnected) {
             Log.i(TAG, "Connected")
-            withContext(Dispatchers.Main) {
-                onConnectionSuccessListener?.invoke(socket)
-            }
-            return true
+            withContext(Dispatchers.Main) { onConnectionSuccessListener?.invoke(socket) }
+            true
         } else {
             Log.w(TAG, "Connection failed")
-            withContext(Dispatchers.Main) {
-                onConnectionFailureListener?.invoke(socket)
-            }
-            return false
+            withContext(Dispatchers.Main) { onConnectionFailureListener?.invoke(socket) }
+            false
         }
     }
 }

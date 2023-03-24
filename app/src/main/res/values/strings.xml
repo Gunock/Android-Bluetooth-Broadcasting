@@ -19,6 +19,21 @@
     <string name="activity_server_send_message">SEND MESSAGE</string>
     <string name="activity_server_stop_server">STOP SERVER</string>
 
+    <string name="dialog_fragment_permissions_denied_message">
+        This app requires bluetooth permissions in order to work.
+        You have rejected previous permissions request.
+        Please go to settings to grant necessary permission to the app.
+    </string>
+    <string name="dialog_fragment_permissions_denied_go_to_settings">Go to settings</string>
+
+    <string name="dialog_fragment_permissions_request_message">
+        This app requires bluetooth permissions in order to work.
+        Proceed to request permissions.
+    </string>
+    <string name="dialog_fragment_permissions_request_proceed">Proceed</string>
+
+    <string name="dialog_fragment_permission_close_app">Close app</string>
+
 
     <string name="placeholder_bt_device">Bluetooth Device</string>
 

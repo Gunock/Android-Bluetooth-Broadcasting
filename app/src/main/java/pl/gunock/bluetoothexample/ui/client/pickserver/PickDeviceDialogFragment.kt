@@ -21,8 +21,8 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import pl.gunock.bluetoothexample.bluetooth.BluetoothServiceDiscoveryManager
 import pl.gunock.bluetoothexample.databinding.DialogFragmentPickDeviceBinding
+import pl.gunock.bluetoothexample.shared.bluetooth.BluetoothServiceDiscoveryManager
 import javax.inject.Inject
 
 
@@ -64,7 +64,7 @@ class PickDeviceDialogFragment(
     ): View {
         binding = DialogFragmentPickDeviceBinding.inflate(inflater)
 
-        setUpRecyclerView()
+        setupRecyclerView()
 
         return binding.root
     }
@@ -84,7 +84,7 @@ class PickDeviceDialogFragment(
         requireActivity().unregisterReceiver(serviceDiscoveryManager.getBroadcastReceiver())
     }
 
-    private fun setUpRecyclerView() {
+    private fun setupRecyclerView() {
         recyclerViewAdapter = BluetoothDeviceItemsAdapter(
             binding.rcvBluetoothDevices.context
         ) { item: BluetoothDeviceItem ->

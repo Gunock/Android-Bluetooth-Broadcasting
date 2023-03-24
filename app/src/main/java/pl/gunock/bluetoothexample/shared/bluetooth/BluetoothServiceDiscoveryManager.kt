@@ -1,4 +1,4 @@
-package pl.gunock.bluetoothexample.bluetooth
+package pl.gunock.bluetoothexample.shared.bluetooth
 
 import android.bluetooth.BluetoothDevice
 import android.content.BroadcastReceiver

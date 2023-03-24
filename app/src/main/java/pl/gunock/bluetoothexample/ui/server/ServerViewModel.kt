@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import pl.gunock.bluetoothexample.R
-import pl.gunock.bluetoothexample.bluetooth.BluetoothServer
+import pl.gunock.bluetoothexample.shared.bluetooth.BluetoothServer
 import java.util.*
 import javax.inject.Inject
 

@@ -1,4 +1,4 @@
-package pl.gunock.bluetoothexample.bluetooth
+package pl.gunock.bluetoothexample.shared.bluetooth
 
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
@@ -12,11 +12,13 @@ import android.os.ParcelUuid
 import android.util.Log
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import pl.gunock.bluetoothexample.bluetooth.BluetoothServiceDiscoveryManager.Companion.TAG
-import pl.gunock.bluetoothexample.extensions.order
+import pl.gunock.bluetoothexample.shared.bluetooth.BluetoothServiceDiscoveryManager.Companion.TAG
+import pl.gunock.bluetoothexample.shared.extensions.order
 import java.nio.ByteOrder
 import java.util.concurrent.locks.ReentrantLock
 
+// TODO: Add support for companion device pairing
+// https://developer.android.com/guide/topics/connectivity/companion-device-pairing
 class BluetoothServiceDiscoveryManagerImpl(
     private val context: Context,
 ) : BluetoothServiceDiscoveryManager {
