@@ -19,12 +19,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ContentMainBinding
 
 
-    private val secondPermissionRequestLauncherLauncher =
+    private val secondPermissionRequestLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { isGranted ->
             if (!isGranted.values.any { !it }) {
                 return@registerForActivityResult
             }
-            PermissionsDeniedDialogFragment().show(supportFragmentManager)
+            PermissionsDeniedDialogFragment(::checkPermissions).show(supportFragmentManager)
         }
 
     private val firstPermissionRequestLauncher =
@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             PermissionsRequestDialogFragment {
-                secondPermissionRequestLauncherLauncher.launch(BluetoothApplication.PERMISSIONS)
+                secondPermissionRequestLauncher.launch(BluetoothApplication.PERMISSIONS)
             }.show(supportFragmentManager)
         }
 
@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(rootBinding.root)
 
         setupButtons()
-        setupPermissionCheck()
+        checkPermissions()
     }
 
     private fun setupButtons() {
@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupPermissionCheck() {
+    private fun checkPermissions() {
         when {
             BluetoothApplication.PERMISSIONS.all {
                 this.checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED
@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity() {
             }
             BluetoothApplication.PERMISSIONS.any(::shouldShowRequestPermissionRationale) -> {
                 PermissionsRequestDialogFragment {
-                    secondPermissionRequestLauncherLauncher.launch(BluetoothApplication.PERMISSIONS)
+                    secondPermissionRequestLauncher.launch(BluetoothApplication.PERMISSIONS)
                 }.show(supportFragmentManager)
             }
             else -> {

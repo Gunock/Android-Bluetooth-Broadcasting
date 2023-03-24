@@ -1,6 +1,7 @@
 package pl.gunock.bluetoothexample.ui.main
 
 import android.app.Dialog
+import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -11,7 +12,9 @@ import androidx.fragment.app.FragmentManager
 import pl.gunock.bluetoothexample.R
 import kotlin.system.exitProcess
 
-class PermissionsDeniedDialogFragment : DialogFragment() {
+class PermissionsDeniedDialogFragment(
+    private val onDismissCallback: () -> Unit
+) : DialogFragment() {
     companion object {
         const val TAG = "PermissionsDeniedDialogFragment"
     }
@@ -33,13 +36,17 @@ class PermissionsDeniedDialogFragment : DialogFragment() {
         super.show(manager, TAG)
     }
 
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        onDismissCallback.invoke()
+    }
+
     private fun goToSettings() {
         val fragmentActivity = requireActivity()
         val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
         val uri: Uri = Uri.fromParts("package", fragmentActivity.packageName, null)
         intent.data = uri
         startActivity(intent)
-        // TODO: Check permissions after returing from the settings
     }
 
     private fun exitApp() {

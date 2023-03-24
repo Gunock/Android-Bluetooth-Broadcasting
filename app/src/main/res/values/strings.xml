@@ -28,7 +28,7 @@
 
     <string name="dialog_fragment_permissions_request_message">
         This app requires bluetooth permissions in order to work.
-        Proceed to request permissions.
+        Proceed to check permissions.
     </string>
     <string name="dialog_fragment_permissions_request_proceed">Proceed</string>
 

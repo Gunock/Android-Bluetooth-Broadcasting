@@ -27,7 +27,6 @@ class PermissionsRequestDialogFragment(
             .setMessage(R.string.dialog_fragment_permissions_request_message)
             .setPositiveButton(R.string.dialog_fragment_permissions_request_proceed) { _, _ ->
                 onPermissionRequestResult.invoke()
-                this.dismiss()
             }
             .setNegativeButton(R.string.dialog_fragment_permission_close_app) { _, _ -> exitApp() }
             .create()
