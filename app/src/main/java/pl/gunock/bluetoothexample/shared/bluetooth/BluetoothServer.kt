@@ -1,9 +1,12 @@
-package pl.gunock.bluetoothexample.bluetooth
+package pl.gunock.bluetoothexample.shared.bluetooth
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothServerSocket
 import android.bluetooth.BluetoothSocket
 import android.util.Log
+import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.*
 import java.io.IOException
 import java.util.*
@@ -27,9 +30,12 @@ class BluetoothServer(
 
     private val clientSockets: MutableList<BluetoothSocket> = mutableListOf()
 
-    private var isStopped: Boolean = true
+    private var _isStopped: Boolean = true
+    private var isStopped: Boolean
+        get() = _isStopped
         set(value) {
             onStateChangeListener?.invoke(value)
+            _isStopped = value
         }
 
     init {
@@ -48,32 +54,32 @@ class BluetoothServer(
         onStateChangeListener = listener
     }
 
-    @Suppress("BlockingMethodInNonBlockingContext")
-    suspend fun startLoop() {
-        serverSocket = bluetoothAdapter.listenUsingRfcommWithServiceRecord(
-            serviceName,
-            serviceUUID
-        )
+    @SuppressLint("InlinedApi")
+    @RequiresPermission(anyOf = [Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH])
+    suspend fun startLoop() = withContext(Dispatchers.IO) {
+        serverSocket = bluetoothAdapter
+            .listenUsingRfcommWithServiceRecord(serviceName, serviceUUID)
 
         isStopped = false
 
         Log.i(TAG, "Server loop started")
         do {
-            val clientSocket: BluetoothSocket =
-                withContext(Dispatchers.IO) { acceptConnection() } ?: continue
+            Log.v(TAG, "Server loop next iteration")
+            val clientSocket: BluetoothSocket = acceptConnection() ?: continue
 
             Log.i(TAG, "Connection accepted : ${clientSocket.remoteDevice.name}")
 
             withContext(Dispatchers.Main) { onConnectListener?.invoke(clientSocket) }
+            delay(1000)
             clientSockets.add(clientSocket)
         } while (!isStopped)
     }
 
     fun stop() {
+        isStopped = true
         clientSockets.forEach { it.close() }
         clientSockets.clear()
         serverSocket?.close()
-        isStopped = true
     }
 
     fun broadcastMessage(message: String) {
@@ -82,7 +88,7 @@ class BluetoothServer(
         }
     }
 
-    fun sendMessage(socket: BluetoothSocket, message: String) {
+    private fun sendMessage(socket: BluetoothSocket, message: String) {
         Log.i(TAG, "Broadcast message '$message'")
 
         val nullTerminatedMessage = (message + 4.toChar()).toByteArray()
@@ -100,7 +106,7 @@ class BluetoothServer(
             when (e) {
                 is IOException,
                 is NullPointerException -> {
-                    Log.e(TAG, "Socket's accept() method failed", e)
+                    Log.w(TAG, "Socket's accept() method failed", e)
                     isStopped = true
 
                     null
@@ -110,23 +116,24 @@ class BluetoothServer(
         }
     }
 
-    private suspend fun monitorConnections() {
+    private suspend fun monitorConnections() = withContext(Dispatchers.IO) {
         while (true) {
             clientSockets.removeAll { runBlocking { !checkConnectionState(it) } }
             delay(1000)
         }
     }
 
-    @Suppress("BlockingMethodInNonBlockingContext")
-    private suspend fun checkConnectionState(socket: BluetoothSocket): Boolean {
-        try {
-            socket.inputStream.skip(1)
-        } catch (ignored: IOException) {
-            Log.i(TAG, "Socket connection closed")
-            withContext(Dispatchers.Main) { onDisconnectListener?.invoke(socket) }
-            return false
+    private suspend fun checkConnectionState(socket: BluetoothSocket): Boolean =
+        withContext(Dispatchers.IO) {
+            try {
+                socket.inputStream.skip(1)
+            } catch (ignored: IOException) {
+                Log.i(TAG, "Socket connection closed")
+                socket.close()
+                withContext(Dispatchers.Main) { onDisconnectListener?.invoke(socket) }
+                return@withContext false
+            }
+            return@withContext true
         }
-        return true
-    }
 
 }

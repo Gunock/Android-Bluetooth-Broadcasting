@@ -1,13 +1,21 @@
 package pl.gunock.bluetoothexample.ui.client
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.util.Log
-import androidx.lifecycle.*
+import androidx.annotation.RequiresPermission
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import pl.gunock.bluetoothexample.R
-import pl.gunock.bluetoothexample.bluetooth.BluetoothClient
+import pl.gunock.bluetoothexample.shared.bluetooth.BluetoothClient
 import java.util.*
 import javax.inject.Inject
 
@@ -21,42 +29,42 @@ class ClientViewModel @Inject constructor() : ViewModel() {
 
     private var bluetoothClient: BluetoothClient? = null
 
-    private val _clientStatus: MutableLiveData<Pair<Int, String?>> =
-        MutableLiveData(Pair(R.string.activity_client_disconnected, null))
-    val clientStatus: LiveData<Pair<Int, String?>> = _clientStatus
+    private val _clientStatus: MutableStateFlow<Pair<Int, String?>> =
+        MutableStateFlow(Pair(R.string.activity_client_disconnected, null))
+    val clientStatus: StateFlow<Pair<Int, String?>> = _clientStatus
 
-    private val _receivedText: MutableLiveData<String> = MutableLiveData()
-    val receivedText: LiveData<String> = _receivedText
+    private val _receivedText: MutableSharedFlow<String> = MutableSharedFlow(replay = 1)
+    val receivedText: Flow<String> = _receivedText
 
-    private val _message: MutableLiveData<String> = MutableLiveData()
-    val message: LiveData<String> = _message
-
-
+    @SuppressLint("InlinedApi")
+    @RequiresPermission(anyOf = [Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH])
     fun setClient(device: BluetoothDevice) {
-        val bluetoothClient = BluetoothClient(
-            device,
-            SERVICE_UUID
-        ) {
+        val bluetoothSocket = device.createRfcommSocketToServiceRecord(SERVICE_UUID)
+        val bluetoothClient = BluetoothClient(bluetoothSocket)
+
+        bluetoothClient.setOnDataListener {
             val text = it.decodeToString()
             Log.i(TAG, "Received message '$text'")
-            _receivedText.postValue(text)
+            _receivedText.tryEmit(text)
         }
 
         bluetoothClient.setOnConnectionSuccessListener {
-            _clientStatus.postValue(Pair(R.string.activity_client_connected, it.remoteDevice.name))
+            _clientStatus.value = Pair(R.string.activity_client_connected, it.remoteDevice.name)
         }
 
         bluetoothClient.setOnConnectionFailureListener {
-            _clientStatus.postValue(Pair(R.string.activity_client_disconnected, null))
+            _clientStatus.value = Pair(R.string.activity_client_disconnected, null)
         }
 
         bluetoothClient.setOnDisconnectionListener {
-            _clientStatus.postValue(Pair(R.string.activity_client_disconnected, null))
+            _clientStatus.value = Pair(R.string.activity_client_disconnected, null)
         }
 
         this.bluetoothClient = bluetoothClient
     }
 
+    @SuppressLint("InlinedApi")
+    @RequiresPermission(anyOf = [Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH])
     fun startClient() {
         viewModelScope.launch(Dispatchers.IO) {
             Log.i(TAG, "Started listening")

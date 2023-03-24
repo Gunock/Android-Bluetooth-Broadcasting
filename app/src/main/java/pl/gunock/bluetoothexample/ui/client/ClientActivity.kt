@@ -2,7 +2,6 @@ package pl.gunock.bluetoothexample.ui.client
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -17,11 +16,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import pl.gunock.bluetoothexample.R
 import pl.gunock.bluetoothexample.databinding.ActivityClientBinding
 import pl.gunock.bluetoothexample.databinding.ContentClientBinding
-import pl.gunock.bluetoothexample.extensions.registerForActivityResult
+import pl.gunock.bluetoothexample.shared.extensions.registerForActivityResult
 import pl.gunock.bluetoothexample.ui.client.pickserver.PickDeviceDialogFragment
 import pl.gunock.bluetoothexample.ui.client.pickserver.PickDeviceDialogViewModel
 import javax.inject.Inject
@@ -53,10 +55,10 @@ class ClientActivity : AppCompatActivity() {
 
 
         pickDeviceDialogViewModel =
-            ViewModelProvider(this).get(PickDeviceDialogViewModel::class.java)
+            ViewModelProvider(this)[PickDeviceDialogViewModel::class.java]
 
-        setUpObservers()
-        setUpListeners()
+        setupObservers()
+        setupListeners()
 
         val permissions: MutableList<String> = mutableListOf()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -71,7 +73,7 @@ class ClientActivity : AppCompatActivity() {
         }
 
         if (permissions.isEmpty()) {
-            setUpBluetooth()
+            setupBluetooth()
 
         } else {
             requestPermissions(permissions.toTypedArray(), BT_PERMISSION_RESULT_CODE)
@@ -95,10 +97,10 @@ class ClientActivity : AppCompatActivity() {
             return
         }
 
-        setUpBluetooth()
+        setupBluetooth()
     }
 
-    private fun setUpBluetooth() {
+    private fun setupBluetooth() {
         val bluetoothAdapter = bluetoothManager.adapter
 
         if (bluetoothAdapter == null) {
@@ -116,7 +118,7 @@ class ClientActivity : AppCompatActivity() {
         }
     }
 
-    private fun setUpListeners() {
+    private fun setupListeners() {
         binding.btnPickServerDevice.setOnClickListener {
             PickDeviceDialogFragment(
                 ParcelUuid(ClientViewModel.SERVICE_UUID)
@@ -125,11 +127,7 @@ class ClientActivity : AppCompatActivity() {
                 show(supportFragmentManager, PickDeviceDialogFragment.TAG)
             }
 
-            pickDeviceDialogViewModel.bluetoothDevice.postValue(null)
-            pickDeviceDialogViewModel.bluetoothDevice.observe(
-                this,
-                this::observeDialogBluetoothDevice
-            )
+            pickDeviceDialogViewModel.resetPickedBluetoothDevice()
         }
 
         binding.btnDisconnect.setOnClickListener {
@@ -137,25 +135,44 @@ class ClientActivity : AppCompatActivity() {
         }
     }
 
-    private fun setUpObservers() {
-        viewModel.clientStatus.observe(this) { (stringId, deviceName) ->
-            var statusText = getString(stringId)
-            if (deviceName != null) {
-                statusText = statusText.format(deviceName)
-            }
+    private fun setupObservers() {
+        viewModel.clientStatus
+            .onEach { (stringId, deviceName) ->
+                var statusText = getString(stringId)
+                if (deviceName != null) {
+                    statusText = statusText.format(deviceName)
+                }
 
-            binding.tvServerConnectionStatus.text = statusText
-        }
+                binding.tvServerConnectionStatus.text = statusText
+            }.launchIn(lifecycleScope)
 
-        viewModel.receivedText.observe(this) {
-            binding.tvMessagePreview.text = it
-        }
+        viewModel.receivedText
+            .onEach { binding.tvMessagePreview.text = it }
+            .launchIn(lifecycleScope)
+
+        pickDeviceDialogViewModel.bluetoothDeviceAddress
+            .onEach(this::observeDialogBluetoothDevice)
+            .launchIn(lifecycleScope)
+
+        pickDeviceDialogViewModel.message
+            .onEach {
+                if (it.isNotBlank()) {
+                    Toast.makeText(baseContext, it, Toast.LENGTH_SHORT).show()
+                }
+            }.launchIn(lifecycleScope)
     }
 
-    private fun observeDialogBluetoothDevice(device: BluetoothDevice?) {
-        pickDeviceDialogViewModel.bluetoothDevice.removeObservers(this)
-        viewModel.setClient(device ?: return)
-        viewModel.startClient()
+    private fun observeDialogBluetoothDevice(deviceAddress: String?) {
+        val bluetoothAdapter = bluetoothManager.adapter
+        val device = bluetoothAdapter.getRemoteDevice(deviceAddress ?: return)
+
+        try {
+            viewModel.setClient(device)
+            viewModel.startClient()
+        } catch (ex: SecurityException) {
+            finish()
+            return
+        }
     }
 
     private fun handleEnableBluetoothResult(result: ActivityResult) {

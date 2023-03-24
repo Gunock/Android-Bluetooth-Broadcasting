@@ -14,7 +14,7 @@ object AppModule {
 
     @Provides
     fun provideBluetoothManager(@ApplicationContext context: Context): BluetoothManager {
-        return context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        return context.getSystemService(BluetoothManager::class.java)
     }
 
 }

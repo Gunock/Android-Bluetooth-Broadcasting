@@ -1,5 +1,7 @@
-package pl.gunock.bluetoothexample.bluetooth
+package pl.gunock.bluetoothexample.shared.bluetooth
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
@@ -10,37 +12,36 @@ import android.content.Intent
 import android.os.Build
 import android.os.ParcelUuid
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
-import pl.gunock.bluetoothexample.bluetooth.BluetoothServiceDiscoveryManager.Companion.TAG
-import pl.gunock.bluetoothexample.extensions.order
+import androidx.annotation.RequiresPermission
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import pl.gunock.bluetoothexample.shared.bluetooth.BluetoothServiceDiscoveryManager.Companion.TAG
+import pl.gunock.bluetoothexample.shared.extensions.order
 import java.nio.ByteOrder
 import java.util.concurrent.locks.ReentrantLock
 
+// TODO: Add support for companion device pairing
+// https://developer.android.com/guide/topics/connectivity/companion-device-pairing
 class BluetoothServiceDiscoveryManagerImpl(
     private val context: Context,
 ) : BluetoothServiceDiscoveryManager {
 
     private val receiver: BroadcastReceiver = ServiceDiscoveryBroadcastReceiver()
 
-    private val devices: MutableLiveData<Set<BluetoothDevice>> = MutableLiveData(setOf())
-
-    private val devicesToFetch: MutableList<BluetoothDevice> = mutableListOf()
+    private val bluetoothDevices: MutableStateFlow<Set<BluetoothDevice>> = MutableStateFlow(setOf())
 
     private val expectedUuidsLock = ReentrantLock()
 
     private var expectedUuids: Collection<ParcelUuid> = listOf()
 
+    @SuppressLint("InlinedApi")
+    @RequiresPermission(anyOf = [Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH])
     override fun discoverServicesInDevices(devices: Collection<BluetoothDevice>) {
         if (devices.isEmpty()) {
             return
         }
 
-        val deviceList = devices.toMutableList()
-        devicesToFetch.clear()
-        devicesToFetch.addAll(deviceList)
-
-        val firstDevice: BluetoothDevice = devicesToFetch.removeFirst()
-        fetchDevicesUuidsWithSdp(firstDevice)
+        devices.forEach { fetchDevicesUuidsWithSdp(it) }
     }
 
     override fun setExpectedUuids(uuids: Collection<ParcelUuid>) {
@@ -56,14 +57,15 @@ class BluetoothServiceDiscoveryManagerImpl(
         return receiver
     }
 
-    override fun getBluetoothDevices(): MutableLiveData<Set<BluetoothDevice>> {
-        return devices
+    override fun getBluetoothDevices(): Flow<Set<BluetoothDevice>> {
+        return bluetoothDevices
     }
 
-    private fun fetchDevicesUuidsWithSdp(bluetoothDevice: BluetoothDevice?) {
-        bluetoothDevice ?: return
-
+    @SuppressLint("InlinedApi")
+    @RequiresPermission(anyOf = [Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH])
+    private fun fetchDevicesUuidsWithSdp(bluetoothDevice: BluetoothDevice) {
         val callback = object : BluetoothGattCallback() {
+            @SuppressLint("MissingPermission")
             override fun onConnectionStateChange(
                 gatt: BluetoothGatt?,
                 status: Int,
@@ -76,8 +78,6 @@ class BluetoothServiceDiscoveryManagerImpl(
                     bluetoothDevice.fetchUuidsWithSdp()
                 } else {
                     Log.i(TAG, "${bluetoothDevice.name} is unreachable")
-                    val nextDevice = devicesToFetch.removeFirstOrNull()
-                    fetchDevicesUuidsWithSdp(nextDevice)
                 }
             }
         }
@@ -87,15 +87,27 @@ class BluetoothServiceDiscoveryManagerImpl(
     }
 
     private inner class ServiceDiscoveryBroadcastReceiver : BroadcastReceiver() {
+        @SuppressLint("InlinedApi")
+        @RequiresPermission(anyOf = [Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH])
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
                 BluetoothDevice.ACTION_UUID -> handleActionUuid(intent)
             }
         }
 
+        @SuppressLint("InlinedApi")
+        @RequiresPermission(anyOf = [Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH])
         private fun handleActionUuid(intent: Intent) {
             val deviceExtra: BluetoothDevice =
-                intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)!!
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                    @Suppress("DEPRECATION")
+                    intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)!!
+                } else {
+                    intent.getParcelableExtra(
+                        BluetoothDevice.EXTRA_DEVICE,
+                        BluetoothDevice::class.java
+                    )!!
+                }
 
             // This is a workaround for bluetooth problem in android 6.0.1 and 7
             // https://issuetracker.google.com/issues/37075233
@@ -118,15 +130,12 @@ class BluetoothServiceDiscoveryManagerImpl(
 
             Log.d(TAG, "${deviceExtra.name} : ${uuids.map { it.uuid }}")
             Log.d(TAG, "${deviceExtra.name} : $hasService")
-            val newDevices = if (hasService) {
-                devices.value!! + deviceExtra
-            } else {
-                devices.value!! - deviceExtra
-            }
-            devices.postValue(newDevices)
 
-            val nextDevice = devicesToFetch.removeFirstOrNull()
-            fetchDevicesUuidsWithSdp(nextDevice)
+            if (hasService) {
+                bluetoothDevices.value += deviceExtra
+            } else {
+                bluetoothDevices.value -= deviceExtra
+            }
         }
     }
 

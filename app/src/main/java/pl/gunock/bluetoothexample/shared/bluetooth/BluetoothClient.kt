@@ -1,16 +1,16 @@
-package pl.gunock.bluetoothexample.bluetooth
+package pl.gunock.bluetoothexample.shared.bluetooth
 
-import android.bluetooth.BluetoothDevice
+import android.Manifest
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothSocket
 import android.util.Log
+import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.*
 import java.io.IOException
 import java.util.*
 
 class BluetoothClient(
-    connectedDevice: BluetoothDevice,
-    serviceUUID: UUID,
-    onDataListener: suspend (ByteArray) -> Unit
+    private val socket: BluetoothSocket
 ) {
     private companion object {
         const val TAG = "BluetoothClient"
@@ -22,12 +22,9 @@ class BluetoothClient(
 
     private var onDisconnectionListener: ((BluetoothSocket) -> Unit)? = null
 
-    private var onDataListener: (suspend (ByteArray) -> Unit)? = onDataListener
+    private var onDataListener: (suspend (ByteArray) -> Unit)? = null
 
     private var stop: Boolean = false
-
-    private val socket: BluetoothSocket =
-        connectedDevice.createRfcommSocketToServiceRecord(serviceUUID)
 
     fun setOnConnectionSuccessListener(listener: (suspend (BluetoothSocket) -> Unit)?) {
         onConnectionSuccessListener = listener
@@ -45,15 +42,17 @@ class BluetoothClient(
         onDataListener = listener
     }
 
-    @Suppress("BlockingMethodInNonBlockingContext")
-    suspend fun startLoop() {
+    @SuppressLint("InlinedApi")
+    @RequiresPermission(anyOf = [Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH])
+
+    suspend fun startLoop() = withContext(Dispatchers.IO) {
         if (!connect()) {
-            return
+            return@withContext
         }
 
         CoroutineScope(Dispatchers.IO).launch {
             while (!stop) {
-                delay(500)
+                delay(1000)
                 checkConnectionState()
             }
         }
@@ -95,23 +94,17 @@ class BluetoothClient(
                 byteArrayOf()
             }
 
-            withContext(Dispatchers.Main) {
-                onDataListener?.invoke(messageBuffer)
-            }
+            withContext(Dispatchers.Main) { onDataListener?.invoke(messageBuffer) }
         }
     }
 
-    @Suppress("BlockingMethodInNonBlockingContext")
-    suspend fun disconnect() {
+    suspend fun disconnect() = withContext(Dispatchers.IO) {
         stop = true
         socket.close()
-        withContext(Dispatchers.Main) {
-            onDisconnectionListener?.invoke(socket)
-        }
+        withContext(Dispatchers.Main) { onDisconnectionListener?.invoke(socket) }
     }
 
-    @Suppress("BlockingMethodInNonBlockingContext")
-    private suspend fun checkConnectionState() {
+    private suspend fun checkConnectionState() = withContext(Dispatchers.IO) {
         try {
             socket.outputStream.write(0)
         } catch (ignored: IOException) {
@@ -121,27 +114,23 @@ class BluetoothClient(
         }
     }
 
-    @Suppress("BlockingMethodInNonBlockingContext")
-    private suspend fun connect(): Boolean {
+    @SuppressLint("InlinedApi")
+    @RequiresPermission(anyOf = [Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH])
+    private suspend fun connect(): Boolean = withContext(Dispatchers.IO) {
         try {
             socket.connect()
         } catch (ignored: IOException) {
-            Log.i(TAG, "Connection failed")
             socket.close()
         }
 
-        if (socket.isConnected) {
+        return@withContext if (socket.isConnected) {
             Log.i(TAG, "Connected")
-            withContext(Dispatchers.Main) {
-                onConnectionSuccessListener?.invoke(socket)
-            }
-            return true
+            withContext(Dispatchers.Main) { onConnectionSuccessListener?.invoke(socket) }
+            true
         } else {
             Log.w(TAG, "Connection failed")
-            withContext(Dispatchers.Main) {
-                onConnectionFailureListener?.invoke(socket)
-            }
-            return false
+            withContext(Dispatchers.Main) { onConnectionFailureListener?.invoke(socket) }
+            false
         }
     }
 }

@@ -1,4 +1,4 @@
-package pl.gunock.bluetoothexample.extensions
+package pl.gunock.bluetoothexample.shared.extensions
 
 import android.content.Intent
 import androidx.activity.ComponentActivity
