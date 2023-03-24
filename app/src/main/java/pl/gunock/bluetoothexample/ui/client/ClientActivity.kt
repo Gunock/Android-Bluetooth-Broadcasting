@@ -166,8 +166,13 @@ class ClientActivity : AppCompatActivity() {
         val bluetoothAdapter = bluetoothManager.adapter
         val device = bluetoothAdapter.getRemoteDevice(deviceAddress ?: return)
 
-        viewModel.setClient(device)
-        viewModel.startClient()
+        try {
+            viewModel.setClient(device)
+            viewModel.startClient()
+        } catch (ex: SecurityException) {
+            finish()
+            return
+        }
     }
 
     private fun handleEnableBluetoothResult(result: ActivityResult) {

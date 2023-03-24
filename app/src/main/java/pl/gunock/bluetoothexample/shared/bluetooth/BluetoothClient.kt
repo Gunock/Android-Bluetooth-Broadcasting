@@ -1,7 +1,10 @@
 package pl.gunock.bluetoothexample.shared.bluetooth
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothSocket
 import android.util.Log
+import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.*
 import java.io.IOException
 import java.util.*
@@ -38,6 +41,9 @@ class BluetoothClient(
     fun setOnDataListener(listener: (suspend (ByteArray) -> Unit)?) {
         onDataListener = listener
     }
+
+    @SuppressLint("InlinedApi")
+    @RequiresPermission(anyOf = [Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH])
 
     suspend fun startLoop() = withContext(Dispatchers.IO) {
         if (!connect()) {
@@ -88,23 +94,17 @@ class BluetoothClient(
                 byteArrayOf()
             }
 
-            withContext(Dispatchers.Main) {
-                onDataListener?.invoke(messageBuffer)
-            }
+            withContext(Dispatchers.Main) { onDataListener?.invoke(messageBuffer) }
         }
     }
 
-    @Suppress("BlockingMethodInNonBlockingContext")
-    suspend fun disconnect() {
+    suspend fun disconnect() = withContext(Dispatchers.IO) {
         stop = true
         socket.close()
-        withContext(Dispatchers.Main) {
-            onDisconnectionListener?.invoke(socket)
-        }
+        withContext(Dispatchers.Main) { onDisconnectionListener?.invoke(socket) }
     }
 
-    @Suppress("BlockingMethodInNonBlockingContext")
-    private suspend fun checkConnectionState() {
+    private suspend fun checkConnectionState() = withContext(Dispatchers.IO) {
         try {
             socket.outputStream.write(0)
         } catch (ignored: IOException) {
@@ -114,15 +114,16 @@ class BluetoothClient(
         }
     }
 
-    @Suppress("BlockingMethodInNonBlockingContext")
-    private suspend fun connect(): Boolean {
+    @SuppressLint("InlinedApi")
+    @RequiresPermission(anyOf = [Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH])
+    private suspend fun connect(): Boolean = withContext(Dispatchers.IO) {
         try {
             socket.connect()
         } catch (ignored: IOException) {
             socket.close()
         }
 
-        return if (socket.isConnected) {
+        return@withContext if (socket.isConnected) {
             Log.i(TAG, "Connected")
             withContext(Dispatchers.Main) { onConnectionSuccessListener?.invoke(socket) }
             true

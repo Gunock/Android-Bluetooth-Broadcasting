@@ -1,7 +1,10 @@
 package pl.gunock.bluetoothexample.ui.server
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.util.Log
+import androidx.annotation.RequiresPermission
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -34,6 +37,8 @@ class ServerViewModel @Inject constructor() : ViewModel() {
     private val _message: MutableSharedFlow<String> = MutableSharedFlow(replay = 1)
     val message: Flow<String> = _message
 
+    @SuppressLint("InlinedApi")
+    @RequiresPermission(anyOf = [Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH])
     fun setServer(bluetoothAdapter: BluetoothAdapter) {
         val bluetoothServer = BluetoothServer(
             bluetoothAdapter,
@@ -62,7 +67,8 @@ class ServerViewModel @Inject constructor() : ViewModel() {
         server = bluetoothServer
     }
 
-
+    @SuppressLint("InlinedApi")
+    @RequiresPermission(anyOf = [Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH])
     fun startServer() {
         viewModelScope.launch(Dispatchers.IO) {
             server?.apply {

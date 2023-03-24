@@ -45,6 +45,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(rootBinding.root)
 
         setupButtons()
+    }
+
+    override fun onResume() {
+        super.onResume()
         checkPermissions()
     }
 

@@ -1,9 +1,12 @@
 package pl.gunock.bluetoothexample.shared.bluetooth
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothServerSocket
 import android.bluetooth.BluetoothSocket
 import android.util.Log
+import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.*
 import java.io.IOException
 import java.util.*
@@ -51,8 +54,9 @@ class BluetoothServer(
         onStateChangeListener = listener
     }
 
-    @Suppress("BlockingMethodInNonBlockingContext")
-    suspend fun startLoop() {
+    @SuppressLint("InlinedApi")
+    @RequiresPermission(anyOf = [Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH])
+    suspend fun startLoop() = withContext(Dispatchers.IO) {
         serverSocket = bluetoothAdapter
             .listenUsingRfcommWithServiceRecord(serviceName, serviceUUID)
 
@@ -61,8 +65,7 @@ class BluetoothServer(
         Log.i(TAG, "Server loop started")
         do {
             Log.v(TAG, "Server loop next iteration")
-            val clientSocket: BluetoothSocket =
-                withContext(Dispatchers.IO) { acceptConnection() } ?: continue
+            val clientSocket: BluetoothSocket = acceptConnection() ?: continue
 
             Log.i(TAG, "Connection accepted : ${clientSocket.remoteDevice.name}")
 
@@ -113,24 +116,24 @@ class BluetoothServer(
         }
     }
 
-    private suspend fun monitorConnections() {
+    private suspend fun monitorConnections() = withContext(Dispatchers.IO) {
         while (true) {
             clientSockets.removeAll { runBlocking { !checkConnectionState(it) } }
             delay(1000)
         }
     }
 
-    @Suppress("BlockingMethodInNonBlockingContext")
-    private suspend fun checkConnectionState(socket: BluetoothSocket): Boolean {
-        try {
-            socket.inputStream.skip(1)
-        } catch (ignored: IOException) {
-            Log.i(TAG, "Socket connection closed")
-            socket.close()
-            withContext(Dispatchers.Main) { onDisconnectListener?.invoke(socket) }
-            return false
+    private suspend fun checkConnectionState(socket: BluetoothSocket): Boolean =
+        withContext(Dispatchers.IO) {
+            try {
+                socket.inputStream.skip(1)
+            } catch (ignored: IOException) {
+                Log.i(TAG, "Socket connection closed")
+                socket.close()
+                withContext(Dispatchers.Main) { onDisconnectListener?.invoke(socket) }
+                return@withContext false
+            }
+            return@withContext true
         }
-        return true
-    }
 
 }

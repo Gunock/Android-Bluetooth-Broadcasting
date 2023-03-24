@@ -1,7 +1,10 @@
 package pl.gunock.bluetoothexample.ui.client
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.util.Log
+import androidx.annotation.RequiresPermission
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -33,6 +36,8 @@ class ClientViewModel @Inject constructor() : ViewModel() {
     private val _receivedText: MutableSharedFlow<String> = MutableSharedFlow(replay = 1)
     val receivedText: Flow<String> = _receivedText
 
+    @SuppressLint("InlinedApi")
+    @RequiresPermission(anyOf = [Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH])
     fun setClient(device: BluetoothDevice) {
         val bluetoothSocket = device.createRfcommSocketToServiceRecord(SERVICE_UUID)
         val bluetoothClient = BluetoothClient(bluetoothSocket)
@@ -58,6 +63,8 @@ class ClientViewModel @Inject constructor() : ViewModel() {
         this.bluetoothClient = bluetoothClient
     }
 
+    @SuppressLint("InlinedApi")
+    @RequiresPermission(anyOf = [Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH])
     fun startClient() {
         viewModelScope.launch(Dispatchers.IO) {
             Log.i(TAG, "Started listening")

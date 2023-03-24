@@ -118,7 +118,12 @@ class ServerActivity @Inject constructor() : AppCompatActivity() {
             enableBluetoothActivityResultLauncher.launch(enableBluetoothIntent)
         }
 
-        viewModel.setServer(bluetoothAdapter)
+        try {
+            viewModel.setServer(bluetoothAdapter)
+        } catch (ex: SecurityException) {
+            finish()
+            return
+        }
     }
 
     private fun setupListeners() {
@@ -144,7 +149,12 @@ class ServerActivity @Inject constructor() : AppCompatActivity() {
             Log.d(TAG, "User refused REQUEST_DISCOVERABLE")
         } else {
             Log.i(TAG, "Started listening")
-            viewModel.startServer()
+            try {
+                viewModel.startServer()
+            } catch (ex: SecurityException) {
+                finish()
+                return
+            }
         }
     }
 

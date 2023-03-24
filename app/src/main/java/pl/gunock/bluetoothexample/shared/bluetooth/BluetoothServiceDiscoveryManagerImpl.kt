@@ -1,5 +1,7 @@
 package pl.gunock.bluetoothexample.shared.bluetooth
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
@@ -10,6 +12,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.ParcelUuid
 import android.util.Log
+import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import pl.gunock.bluetoothexample.shared.bluetooth.BluetoothServiceDiscoveryManager.Companion.TAG
@@ -31,6 +34,8 @@ class BluetoothServiceDiscoveryManagerImpl(
 
     private var expectedUuids: Collection<ParcelUuid> = listOf()
 
+    @SuppressLint("InlinedApi")
+    @RequiresPermission(anyOf = [Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH])
     override fun discoverServicesInDevices(devices: Collection<BluetoothDevice>) {
         if (devices.isEmpty()) {
             return
@@ -56,8 +61,11 @@ class BluetoothServiceDiscoveryManagerImpl(
         return bluetoothDevices
     }
 
+    @SuppressLint("InlinedApi")
+    @RequiresPermission(anyOf = [Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH])
     private fun fetchDevicesUuidsWithSdp(bluetoothDevice: BluetoothDevice) {
         val callback = object : BluetoothGattCallback() {
+            @SuppressLint("MissingPermission")
             override fun onConnectionStateChange(
                 gatt: BluetoothGatt?,
                 status: Int,
@@ -79,12 +87,16 @@ class BluetoothServiceDiscoveryManagerImpl(
     }
 
     private inner class ServiceDiscoveryBroadcastReceiver : BroadcastReceiver() {
+        @SuppressLint("InlinedApi")
+        @RequiresPermission(anyOf = [Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH])
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
                 BluetoothDevice.ACTION_UUID -> handleActionUuid(intent)
             }
         }
 
+        @SuppressLint("InlinedApi")
+        @RequiresPermission(anyOf = [Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH])
         private fun handleActionUuid(intent: Intent) {
             val deviceExtra: BluetoothDevice =
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
