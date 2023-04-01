@@ -35,15 +35,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btn_server_start" />
 
-    <Button
+    <ImageButton
         android:id="@+id/btn_send_message"
+        style="@android:style/Widget.Material.ImageButton"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/activity_server_send_message"
+        android:layout_height="0dp"
+        android:layout_marginEnd="16dp"
+        android:contentDescription="@string/activity_server_send_message"
+        android:src="@drawable/send_fill0_wght400_grad0_opsz48"
+        app:layout_constraintBottom_toBottomOf="@+id/tin_message"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_server_stop" />
+        app:layout_constraintTop_toTopOf="@+id/tin_message" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tin_message"
@@ -52,7 +54,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         app:layout_constraintBottom_toTopOf="@+id/btn_server_start"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/btn_send_message"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 

@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import pl.gunock.bluetoothbroadcasting.databinding.ItemBluetoothDeviceBinding
 
+// TODO: Implement loading spinner for empty state
 class BluetoothDeviceItemsAdapter(
     context: Context,
     private val onItemClick: (item: BluetoothDeviceItem) -> Unit,
