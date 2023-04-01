@@ -1,19 +1,16 @@
 package pl.gunock.bluetoothbroadcasting.ui.client
 
-import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.os.ParcelUuid
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -23,7 +20,6 @@ import kotlinx.coroutines.flow.onEach
 import pl.gunock.bluetoothbroadcasting.R
 import pl.gunock.bluetoothbroadcasting.databinding.ActivityClientBinding
 import pl.gunock.bluetoothbroadcasting.databinding.ContentClientBinding
-import pl.gunock.bluetoothbroadcasting.shared.extensions.registerForActivityResult
 import pl.gunock.bluetoothbroadcasting.ui.client.pickserver.PickDeviceDialogFragment
 import pl.gunock.bluetoothbroadcasting.ui.client.pickserver.PickDeviceDialogViewModel
 import javax.inject.Inject
@@ -32,7 +28,6 @@ import javax.inject.Inject
 class ClientActivity : AppCompatActivity() {
     private companion object {
         const val TAG = "MainActivity"
-        const val BT_PERMISSION_RESULT_CODE = 1
     }
 
     private val viewModel: ClientViewModel by viewModels()
@@ -45,7 +40,10 @@ class ClientActivity : AppCompatActivity() {
     private lateinit var pickDeviceDialogViewModel: PickDeviceDialogViewModel
 
     private val enableBluetoothActivityResultLauncher =
-        registerForActivityResult(this::handleEnableBluetoothResult)
+        registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult(),
+            this::handleEnableBluetoothResult
+        )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,43 +57,6 @@ class ClientActivity : AppCompatActivity() {
 
         setupObservers()
         setupListeners()
-
-        val permissions: MutableList<String> = mutableListOf()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val isPermissionGranted = ContextCompat.checkSelfPermission(
-                baseContext,
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION
-            )
-
-            if (isPermissionGranted != PackageManager.PERMISSION_GRANTED) {
-                permissions.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-            }
-        }
-
-        if (permissions.isEmpty()) {
-            setupBluetooth()
-
-        } else {
-            requestPermissions(permissions.toTypedArray(), BT_PERMISSION_RESULT_CODE)
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-        Log.i(TAG, "Request permission result: $requestCode")
-        if (requestCode != BT_PERMISSION_RESULT_CODE) {
-            return
-        }
-
-        if (grantResults.any { it != PackageManager.PERMISSION_GRANTED }) {
-            Log.i(TAG, "Permission not granted")
-            return
-        }
 
         setupBluetooth()
     }

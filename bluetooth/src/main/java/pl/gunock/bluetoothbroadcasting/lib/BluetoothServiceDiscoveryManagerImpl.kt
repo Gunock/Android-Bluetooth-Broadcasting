@@ -1,4 +1,4 @@
-package pl.gunock.bluetoothbroadcasting.shared.bluetooth
+package pl.gunock.bluetoothbroadcasting.lib
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -15,10 +15,12 @@ import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import pl.gunock.bluetoothbroadcasting.shared.bluetooth.BluetoothServiceDiscoveryManager.Companion.TAG
-import pl.gunock.bluetoothbroadcasting.shared.extensions.order
+import pl.gunock.bluetoothbroadcasting.lib.BluetoothServiceDiscoveryManager.Companion.TAG
+import pl.gunock.bluetoothbroadcasting.lib.extensions.order
 import java.nio.ByteOrder
-import java.util.concurrent.locks.ReentrantLock
+import java.util.concurrent.locks.ReentrantReadWriteLock
+import kotlin.concurrent.read
+import kotlin.concurrent.write
 
 // TODO: Add support for companion device pairing
 // https://developer.android.com/guide/topics/connectivity/companion-device-pairing
@@ -30,7 +32,7 @@ class BluetoothServiceDiscoveryManagerImpl(
 
     private val bluetoothDevices: MutableStateFlow<Set<BluetoothDevice>> = MutableStateFlow(setOf())
 
-    private val expectedUuidsLock = ReentrantLock()
+    private val expectedUuidsLock = ReentrantReadWriteLock(true)
 
     private var expectedUuids: Collection<ParcelUuid> = listOf()
 
@@ -45,11 +47,8 @@ class BluetoothServiceDiscoveryManagerImpl(
     }
 
     override fun setExpectedUuids(uuids: Collection<ParcelUuid>) {
-        expectedUuidsLock.lock()
-        try {
+        expectedUuidsLock.write {
             expectedUuids = uuids
-        } finally {
-            expectedUuidsLock.unlock()
         }
     }
 
@@ -121,11 +120,8 @@ class BluetoothServiceDiscoveryManagerImpl(
                 deviceExtra.uuids
             }
 
-            expectedUuidsLock.lock()
-            val hasService = try {
+            val hasService = expectedUuidsLock.read {
                 uuids.any { it in expectedUuids }
-            } finally {
-                expectedUuidsLock.unlock()
             }
 
             Log.d(TAG, "${deviceExtra.name} : ${uuids.map { it.uuid }}")

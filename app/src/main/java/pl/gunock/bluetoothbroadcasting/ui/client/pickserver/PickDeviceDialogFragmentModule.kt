@@ -6,8 +6,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.FragmentComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
-import pl.gunock.bluetoothbroadcasting.shared.bluetooth.BluetoothServiceDiscoveryManager
-import pl.gunock.bluetoothbroadcasting.shared.bluetooth.BluetoothServiceDiscoveryManagerImpl
+import pl.gunock.bluetoothbroadcasting.lib.BluetoothServiceDiscoveryManager
+import pl.gunock.bluetoothbroadcasting.lib.BluetoothServiceDiscoveryManagerImpl
 
 @Module
 @InstallIn(FragmentComponent::class)

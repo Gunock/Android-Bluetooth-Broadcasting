@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import pl.gunock.bluetoothbroadcasting.databinding.DialogFragmentPickDeviceBinding
-import pl.gunock.bluetoothbroadcasting.shared.bluetooth.BluetoothServiceDiscoveryManager
+import pl.gunock.bluetoothbroadcasting.lib.BluetoothServiceDiscoveryManager
 import javax.inject.Inject
 
 

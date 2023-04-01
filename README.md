@@ -2,7 +2,7 @@
 
 ## Overview
 
-Android for broadcasting messages via Bluetooth.
+Android app for broadcasting messages via Bluetooth.
 * Written using Kotlin and MVVM pattern
 * Minimum Android 6.0 (API 23)
 
@@ -45,14 +45,14 @@ bluetoothServer.setOnStateChangeListener { isStopped: Boolean ->
 Bluetooth client allows connection to server and handles incoming messages.
 
 1. Constructor and operations:
+
 ``` kotlin
-val client =
-  BluetoothClient(
-      device,       // Server device
-      SERVICE_UUID  // Server service ID
-  ) { message: ByteArray ->
-      // Do something
-  }
+// Create bluetooth socket using server device and server service ID
+val bluetoothSocket = device.createRfcommSocketToServiceRecord(SERVICE_UUID)
+val client = BluetoothClient(bluetoothSocket)
+client.bluetoothClient.setOnDataListener { message: ByteArray ->
+    // Do something
+}
   
 // Recommended use on IO thread
 client.startloop()
@@ -60,7 +60,12 @@ client.disconnect()
 
 ```
 2. Bluetooth client has several listeners available:
+
 ``` kotlin
+client.setOnDataListener { message: ByteArray ->
+  // Do something
+}
+
 client.setOnConnectionSuccessListener { serverSocket: BluetoothSocket ->
   // Do something
 }
@@ -72,11 +77,6 @@ client.setOnConnectionFailureListener { serverSocket: BluetoothSocket ->
 client.setOnDisconnectionListener { serverSocket: BluetoothSocket ->
   // Do something
 }
-
-// This replaces the listener given in constructor
-client.setOnDataListener { message: ByteArray ->
-  // Do something
-}
 ```
 
 
@@ -85,19 +85,18 @@ A helper class for acquiring bluetooth devices which host desired service.
 
 1. Constructor:
 ``` kotlin
-BluetoothServiceDiscoveryManager(
-    context
-)
+BluetoothServiceDiscoveryManagerImpl(context)
 ```
 2. You must set which service UUIDs to expect:
 ```
 serviceDiscoveryManager.setExpectedUuids(/* collection of UUIDs */)
 ```
 
-3. You must register receiver (without doing it manager can't handle *fetchUuidsWithSdp* results):
+3. You must register a receiver (without doing it the manager cannot handle *fetchUuidsWithSdp*
+   results):
 ``` kotlin
 activity.registerReceiver(
-    serviceDiscoveryManager.receiver,
+    serviceDiscoveryManager.getBroadcastReceiver(),
     IntentFilter(BluetoothDevice.ACTION_UUID)
 )
 ```
@@ -106,10 +105,12 @@ activity.registerReceiver(
 serviceDiscoveryManager.discoverServicesInDevices(pairedDevices)
 ```
 5. You can observe devices with desired services:
+
 ``` kotlin
-serviceDiscoveryManager.devices.observe(this) { collection: Set<BluetoothDevice> ->
-    // Do something
-}
+serviceDiscoveryManager.getBluetoothDevices()
+    .onEach { collection -> /* Do something */ }
+    .flowOn(Dispatchers.Default)
+    .launchIn(lifecycleScope)
 ```
 
 ## Libraries Used
@@ -117,9 +118,13 @@ serviceDiscoveryManager.devices.observe(this) { collection: Set<BluetoothDevice>
   background threads with simplified code and reducing needs for callbacks.
 * [ViewBinding](https://developer.android.com/topic/libraries/view-binding) - Easy, type safe, null
   safe access to layout elements.
-* [ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel) - Store UI-related data that isn't destroyed on app rotations. Easily schedule asynchronous tasks for optimal execution.
-* [RecyclerView](https://developer.android.com/guide/topics/ui/layout/recyclerview?gclsrc=aw.ds&gclid=CjwKCAjwrPCGBhALEiwAUl9X03wCNk7bhvoxs_okW86jFVgc92QelSerqKyYmfEM54CbHOsKc3tYyxoCgRcQAvD_BwE) for custom list views.
-* [Hilt](https://developer.android.com/training/dependency-injection/hilt-android) - Dependency injection library recommended by Google.
+* [ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel) - Store
+  UI-related data that isn't destroyed on app rotations. Easily schedule asynchronous tasks for
+  optimal execution.
+* [RecyclerView](https://developer.android.com/guide/topics/ui/layout/recyclerview?gclsrc=aw.ds&gclid=CjwKCAjwrPCGBhALEiwAUl9X03wCNk7bhvoxs_okW86jFVgc92QelSerqKyYmfEM54CbHOsKc3tYyxoCgRcQAvD_BwE)
+  - for custom list views.
+* [Hilt](https://developer.android.com/training/dependency-injection/hilt-android) - Dependency
+  injection library recommended by Google.
 
 ## License
 Copyright (c) 2021 Tomasz Kiljańczyk
