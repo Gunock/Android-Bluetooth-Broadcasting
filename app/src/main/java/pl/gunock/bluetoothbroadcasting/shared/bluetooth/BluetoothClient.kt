@@ -1,4 +1,4 @@
-package pl.gunock.bluetoothexample.shared.bluetooth
+package pl.gunock.bluetoothbroadcasting.shared.bluetooth
 
 import android.Manifest
 import android.annotation.SuppressLint

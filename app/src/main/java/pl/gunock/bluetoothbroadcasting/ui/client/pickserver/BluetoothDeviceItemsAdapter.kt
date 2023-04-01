@@ -1,4 +1,4 @@
-package pl.gunock.bluetoothexample.ui.client.pickserver
+package pl.gunock.bluetoothbroadcasting.ui.client.pickserver
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import pl.gunock.bluetoothexample.databinding.ItemBluetoothDeviceBinding
+import pl.gunock.bluetoothbroadcasting.databinding.ItemBluetoothDeviceBinding
 
 class BluetoothDeviceItemsAdapter(
     context: Context,

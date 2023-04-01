@@ -1,4 +1,4 @@
-package pl.gunock.bluetoothexample.ui.client.pickserver
+package pl.gunock.bluetoothbroadcasting.ui.client.pickserver
 
 import android.util.Log
 import androidx.lifecycle.ViewModel

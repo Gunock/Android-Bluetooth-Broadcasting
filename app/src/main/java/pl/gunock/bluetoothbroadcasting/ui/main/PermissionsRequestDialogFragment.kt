@@ -1,11 +1,11 @@
-package pl.gunock.bluetoothexample.ui.main
+package pl.gunock.bluetoothbroadcasting.ui.main
 
 import android.app.Dialog
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
-import pl.gunock.bluetoothexample.R
+import pl.gunock.bluetoothbroadcasting.R
 import kotlin.system.exitProcess
 
 class PermissionsRequestDialogFragment(
@@ -21,7 +21,6 @@ class PermissionsRequestDialogFragment(
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val fragmentActivity = requireActivity()
-
 
         return AlertDialog.Builder(fragmentActivity)
             .setMessage(R.string.dialog_fragment_permissions_request_message)

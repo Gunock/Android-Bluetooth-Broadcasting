@@ -26,7 +26,7 @@
 
     <ImageView
         android:id="@+id/imv_device_connected"
-        style="@style/Theme.BluetoothTest.Icon"
+        style="@style/Theme.BluetoothBroadcasting.Icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="invisible"
@@ -38,7 +38,7 @@
 
     <ImageView
         android:id="@+id/imv_device_disconnected"
-        style="@style/Theme.BluetoothTest.Icon"
+        style="@style/Theme.BluetoothBroadcasting.Icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="visible"

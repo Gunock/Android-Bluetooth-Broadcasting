@@ -1,15 +1,15 @@
-package pl.gunock.bluetoothexample.ui.main
+package pl.gunock.bluetoothbroadcasting.ui.main
 
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import pl.gunock.bluetoothexample.application.BluetoothApplication
-import pl.gunock.bluetoothexample.databinding.ActivityMainBinding
-import pl.gunock.bluetoothexample.databinding.ContentMainBinding
-import pl.gunock.bluetoothexample.ui.client.ClientActivity
-import pl.gunock.bluetoothexample.ui.server.ServerActivity
+import pl.gunock.bluetoothbroadcasting.application.BluetoothApplication
+import pl.gunock.bluetoothbroadcasting.databinding.ActivityMainBinding
+import pl.gunock.bluetoothbroadcasting.databinding.ContentMainBinding
+import pl.gunock.bluetoothbroadcasting.ui.client.ClientActivity
+import pl.gunock.bluetoothbroadcasting.ui.server.ServerActivity
 
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -47,8 +47,8 @@ class MainActivity : AppCompatActivity() {
         setupButtons()
     }
 
-    override fun onResume() {
-        super.onResume()
+    override fun onStart() {
+        super.onStart()
         checkPermissions()
     }
 

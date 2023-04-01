@@ -13,7 +13,7 @@ android {
     compileSdkVersion rootProject.compileSdkVersion
 
     defaultConfig {
-        applicationId "pl.gunock.bluetoothexample.client"
+        applicationId "pl.gunock.bluetoothbroadcasting"
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
         versionCode major * 100000000 + minor * 10000 + patch
@@ -38,7 +38,7 @@ android {
     kotlinOptions {
         jvmTarget = '11'
     }
-    namespace 'pl.gunock.bluetoothexample'
+    namespace 'pl.gunock.bluetoothbroadcasting'
 }
 
 dependencies {

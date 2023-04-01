@@ -1,4 +1,4 @@
-package pl.gunock.bluetoothexample.ui.client.pickserver
+package pl.gunock.bluetoothbroadcasting.ui.client.pickserver
 
 data class BluetoothDeviceItem(
     val deviceName: String,

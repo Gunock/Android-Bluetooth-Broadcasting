@@ -1,4 +1,4 @@
-package pl.gunock.bluetoothexample.ui.server
+package pl.gunock.bluetoothbroadcasting.ui.server
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
@@ -17,9 +17,9 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import pl.gunock.bluetoothexample.databinding.ActivityServerBinding
-import pl.gunock.bluetoothexample.databinding.ContentServerBinding
-import pl.gunock.bluetoothexample.shared.extensions.registerForActivityResult
+import pl.gunock.bluetoothbroadcasting.databinding.ActivityServerBinding
+import pl.gunock.bluetoothbroadcasting.databinding.ContentServerBinding
+import pl.gunock.bluetoothbroadcasting.shared.extensions.registerForActivityResult
 import javax.inject.Inject
 
 @AndroidEntryPoint

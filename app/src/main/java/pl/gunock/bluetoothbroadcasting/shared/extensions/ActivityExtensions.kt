@@ -1,4 +1,4 @@
-package pl.gunock.bluetoothexample.shared.extensions
+package pl.gunock.bluetoothbroadcasting.shared.extensions
 
 import android.content.Intent
 import androidx.activity.ComponentActivity

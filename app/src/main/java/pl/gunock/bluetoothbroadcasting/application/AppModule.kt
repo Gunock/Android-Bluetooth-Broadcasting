@@ -1,4 +1,4 @@
-package pl.gunock.bluetoothexample.application
+package pl.gunock.bluetoothbroadcasting.application
 
 import android.bluetooth.BluetoothManager
 import android.content.Context

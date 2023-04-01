@@ -1,4 +1,4 @@
-package pl.gunock.bluetoothexample.ui.client
+package pl.gunock.bluetoothbroadcasting.ui.client
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
@@ -20,12 +20,12 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import pl.gunock.bluetoothexample.R
-import pl.gunock.bluetoothexample.databinding.ActivityClientBinding
-import pl.gunock.bluetoothexample.databinding.ContentClientBinding
-import pl.gunock.bluetoothexample.shared.extensions.registerForActivityResult
-import pl.gunock.bluetoothexample.ui.client.pickserver.PickDeviceDialogFragment
-import pl.gunock.bluetoothexample.ui.client.pickserver.PickDeviceDialogViewModel
+import pl.gunock.bluetoothbroadcasting.R
+import pl.gunock.bluetoothbroadcasting.databinding.ActivityClientBinding
+import pl.gunock.bluetoothbroadcasting.databinding.ContentClientBinding
+import pl.gunock.bluetoothbroadcasting.shared.extensions.registerForActivityResult
+import pl.gunock.bluetoothbroadcasting.ui.client.pickserver.PickDeviceDialogFragment
+import pl.gunock.bluetoothbroadcasting.ui.client.pickserver.PickDeviceDialogViewModel
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -123,7 +123,7 @@ class ClientActivity : AppCompatActivity() {
             PickDeviceDialogFragment(
                 ParcelUuid(ClientViewModel.SERVICE_UUID)
             ).apply {
-                setStyle(DialogFragment.STYLE_NORMAL, R.style.Theme_BluetoothTest_Dialog)
+                setStyle(DialogFragment.STYLE_NORMAL, R.style.Theme_BluetoothBroadcasting_Dialog)
                 show(supportFragmentManager, PickDeviceDialogFragment.TAG)
             }
 

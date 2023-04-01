@@ -1,4 +1,4 @@
-package pl.gunock.bluetoothexample.shared.bluetooth
+package pl.gunock.bluetoothbroadcasting.shared.bluetooth
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -15,8 +15,8 @@ import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import pl.gunock.bluetoothexample.shared.bluetooth.BluetoothServiceDiscoveryManager.Companion.TAG
-import pl.gunock.bluetoothexample.shared.extensions.order
+import pl.gunock.bluetoothbroadcasting.shared.bluetooth.BluetoothServiceDiscoveryManager.Companion.TAG
+import pl.gunock.bluetoothbroadcasting.shared.extensions.order
 import java.nio.ByteOrder
 import java.util.concurrent.locks.ReentrantLock
 
