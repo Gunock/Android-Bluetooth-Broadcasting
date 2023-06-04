@@ -125,6 +125,12 @@ serviceDiscoveryManager.getBluetoothDevices()
 * [Hilt](https://developer.android.com/training/dependency-injection/hilt-android) - Dependency
   injection library recommended by Google.
 
+## Stay in touch
+
+- Author - Tomasz Kiljańczyk
+- Mail - [asz.czyk.dev@gmail.com](mailto:asz.czyk.dev@gmail.com)
+- LinkedIn - [https://www.linkedin.com/in/tomasz-kilja%C5%84czyk-6b6ba3130](https://www.linkedin.com/in/tomasz-kilja%C5%84czyk-6b6ba3130)
+
 ## License
 Copyright (c) 2021 Tomasz Kiljańczyk
 
