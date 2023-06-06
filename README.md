@@ -3,16 +3,21 @@
 ## Overview
 
 Android app for broadcasting messages via Bluetooth.
+
 * Written using Kotlin and MVVM pattern
 * Minimum Android 6.0 (API 23)
 
 ## How to use
+
 Here are some instructions if you would like to use my Bluetooth server and client classes.
 
 ### BluetoothServer
-Bluetooth server exposes RFCOMM service, manages client connections and allows broadcasting messages to all connected clients.
+
+Bluetooth server exposes RFCOMM service, manages client connections and allows broadcasting messages
+to all connected clients.
 
 1. Constructor and operations:
+
 ``` kotlin
 val server = BluetoothServer(
     bluetoothAdapter,
@@ -26,7 +31,9 @@ server.stop()
 
 server.broadcastMessage("Something")
 ```
+
 2. Bluetooth server has several listeners available:
+
 ``` kotlin
 bluetoothServer.setOnConnectListener { clientSocket: BluetoothSocket ->
     // Do something
@@ -42,6 +49,7 @@ bluetoothServer.setOnStateChangeListener { isStopped: Boolean ->
 ```
 
 ### BluetoothClient
+
 Bluetooth client allows connection to server and handles incoming messages.
 
 1. Constructor and operations:
@@ -59,6 +67,7 @@ client.startloop()
 client.disconnect()
 
 ```
+
 2. Bluetooth client has several listeners available:
 
 ``` kotlin
@@ -79,31 +88,38 @@ client.setOnDisconnectionListener { serverSocket: BluetoothSocket ->
 }
 ```
 
-
 ### BluetoothServiceDiscoveryManager
+
 A helper class for acquiring bluetooth devices which host desired service.
 
 1. Constructor:
+
 ``` kotlin
 BluetoothServiceDiscoveryManagerImpl(context)
 ```
+
 2. You must set which service UUIDs to expect:
+
 ```
 serviceDiscoveryManager.setExpectedUuids(/* collection of UUIDs */)
 ```
 
 3. You must register a receiver (without doing it the manager cannot handle *fetchUuidsWithSdp*
    results):
+
 ``` kotlin
 activity.registerReceiver(
     serviceDiscoveryManager.getBroadcastReceiver(),
     IntentFilter(BluetoothDevice.ACTION_UUID)
 )
 ```
+
 4. Discover services on given devices:
+
 ``` kotlin
 serviceDiscoveryManager.discoverServicesInDevices(pairedDevices)
 ```
+
 5. You can observe devices with desired services:
 
 ``` kotlin
@@ -114,6 +130,7 @@ serviceDiscoveryManager.getBluetoothDevices()
 ```
 
 ## Libraries Used
+
 * [Kotlin Coroutines](https://kotlinlang.org/docs/coroutines-overview.html) - for managing
   background threads with simplified code and reducing needs for callbacks.
 * [ViewBinding](https://developer.android.com/topic/libraries/view-binding) - Easy, type safe, null
@@ -121,7 +138,8 @@ serviceDiscoveryManager.getBluetoothDevices()
 * [ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel) - Store
   UI-related data that isn't destroyed on app rotations. Easily schedule asynchronous tasks for
   optimal execution.
-* [RecyclerView](https://developer.android.com/guide/topics/ui/layout/recyclerview?gclsrc=aw.ds&gclid=CjwKCAjwrPCGBhALEiwAUl9X03wCNk7bhvoxs_okW86jFVgc92QelSerqKyYmfEM54CbHOsKc3tYyxoCgRcQAvD_BwE) - for custom list views.
+* [RecyclerView](https://developer.android.com/guide/topics/ui/layout/recyclerview?gclsrc=aw.ds&gclid=CjwKCAjwrPCGBhALEiwAUl9X03wCNk7bhvoxs_okW86jFVgc92QelSerqKyYmfEM54CbHOsKc3tYyxoCgRcQAvD_BwE)
+  - for custom list views.
 * [Hilt](https://developer.android.com/training/dependency-injection/hilt-android) - Dependency
   injection library recommended by Google.
 
@@ -129,9 +147,11 @@ serviceDiscoveryManager.getBluetoothDevices()
 
 - Author - Tomasz Kiljańczyk
 - Mail - [asz.czyk.dev@gmail.com](mailto:asz.czyk.dev@gmail.com)
-- LinkedIn - [https://www.linkedin.com/in/tomasz-kilja%C5%84czyk-6b6ba3130](https://www.linkedin.com/in/tomasz-kilja%C5%84czyk-6b6ba3130)
+- LinkedIn
+  - [https://www.linkedin.com/in/tomasz-kilja%C5%84czyk-6b6ba3130](https://www.linkedin.com/in/tomasz-kilja%C5%84czyk-6b6ba3130)
 
 ## License
+
 Copyright (c) 2021 Tomasz Kiljańczyk
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
