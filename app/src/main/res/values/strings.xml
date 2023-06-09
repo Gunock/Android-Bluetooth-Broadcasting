@@ -16,9 +16,12 @@
     <string name="activity_server_server_off">Server OFF</string>
     <string name="activity_server_server_on">Server ON</string>
     <string name="activity_server_enter_message">Enter message</string>
-    <string name="activity_server_send_message">SEND MESSAGE</string>
-    <string name="activity_server_stop_server">STOP SERVER</string>
+    <string name="activity_server_send_message">Send message</string>
+    <string name="activity_server_stop_server">Stop server</string>
 
+    <string name="dialog_fragment_close">Close</string>
+
+    <string name="dialog_fragment_pick_device_title">Pick server device</string>
     <string name="dialog_fragment_permissions_denied_message">
         This app requires bluetooth permissions in order to work.
         You have rejected previous permissions request.

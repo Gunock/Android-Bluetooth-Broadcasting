@@ -6,6 +6,19 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/pb_bluetooth_devices"
+        style="@style/Widget.Material3.LinearProgressIndicator"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:indeterminate="true"
+        app:layout_constraintBottom_toBottomOf="@+id/rcv_bluetooth_devices"
+        app:layout_constraintEnd_toEndOf="@+id/rcv_bluetooth_devices"
+        app:layout_constraintStart_toStartOf="@+id/rcv_bluetooth_devices"
+        app:layout_constraintTop_toTopOf="@+id/rcv_bluetooth_devices" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rcv_bluetooth_devices"
         android:layout_width="match_parent"
@@ -14,4 +27,5 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         tools:listitem="@layout/item_bluetooth_device" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
