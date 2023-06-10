@@ -90,7 +90,7 @@ client.setOnDisconnectionListener { serverSocket: BluetoothSocket ->
 
 ### BluetoothServiceDiscoveryManager
 
-A helper class for acquiring bluetooth devices which host desired service.
+A service class used for acquiring paired bluetooth devices which host desired service.
 
 1. Constructor:
 

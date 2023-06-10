@@ -14,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import pl.gunock.bluetoothbroadcasting.R
 import pl.gunock.bluetoothbroadcasting.databinding.ActivityServerBinding
 import pl.gunock.bluetoothbroadcasting.databinding.ContentServerBinding
 import javax.inject.Inject
@@ -47,6 +48,10 @@ class ServerActivity @Inject constructor() : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val rootBinding = ActivityServerBinding.inflate(layoutInflater)
         binding = rootBinding.content
+
+        setSupportActionBar(rootBinding.toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
         setContentView(rootBinding.root)
 
         setupObservers()
@@ -106,6 +111,11 @@ class ServerActivity @Inject constructor() : AppCompatActivity() {
         binding.btnSendMessage.setOnClickListener {
             val message = binding.edMessage.text.toString()
             viewModel.broadcastMessage(message)
+            Toast.makeText(
+                baseContext,
+                R.string.activity_server_message_sent,
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 

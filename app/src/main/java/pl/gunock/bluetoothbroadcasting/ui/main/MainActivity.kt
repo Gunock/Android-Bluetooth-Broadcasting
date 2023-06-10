@@ -12,10 +12,6 @@ import pl.gunock.bluetoothbroadcasting.ui.client.ClientActivity
 import pl.gunock.bluetoothbroadcasting.ui.server.ServerActivity
 
 class MainActivity : AppCompatActivity() {
-    companion object {
-        const val TAG = "MainActivity"
-    }
-
     private lateinit var binding: ContentMainBinding
 
 
@@ -42,6 +38,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val rootBinding = ActivityMainBinding.inflate(layoutInflater)
         binding = rootBinding.content
+
+        setSupportActionBar(rootBinding.toolbar)
         setContentView(rootBinding.root)
 
         setupButtons()
