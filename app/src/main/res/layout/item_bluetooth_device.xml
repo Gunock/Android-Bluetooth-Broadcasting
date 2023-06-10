@@ -35,7 +35,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/baseline_bluetooth_connected_24" />
+        app:srcCompat="@drawable/round_bluetooth_connected_24" />
 
     <ImageView
         android:id="@+id/imv_device_disconnected"
@@ -48,5 +48,5 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/baseline_bluetooth_disabled_24" />
+        app:srcCompat="@drawable/round_bluetooth_disabled_24" />
 </androidx.constraintlayout.widget.ConstraintLayout>
