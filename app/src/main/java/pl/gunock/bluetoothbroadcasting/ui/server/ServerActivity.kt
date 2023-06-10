@@ -61,12 +61,18 @@ class ServerActivity @Inject constructor() : AppCompatActivity() {
     }
 
     private fun setupObservers() {
-        viewModel.serverStatus
+        viewModel.serverOnFlow
             .onEach {
-                binding.tvServerStatus.text = getString(it)
+                val serverStateText = if (it)
+                    getString(R.string.activity_server_server_on)
+                else
+                    getString(R.string.activity_server_server_off)
+
+                binding.tvServerStatus.text = serverStateText
+
             }.launchIn(lifecycleScope)
 
-        viewModel.message
+        viewModel.messageFlow
             .onEach {
                 Toast.makeText(baseContext, it, Toast.LENGTH_SHORT).show()
             }.launchIn(lifecycleScope)
@@ -78,7 +84,7 @@ class ServerActivity @Inject constructor() : AppCompatActivity() {
         if (bluetoothAdapter == null) {
             Toast.makeText(
                 baseContext,
-                "Oops! It looks like your device doesn't have bluetooth!",
+                R.string.toast_no_bluetooth,
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -111,9 +117,16 @@ class ServerActivity @Inject constructor() : AppCompatActivity() {
         binding.btnSendMessage.setOnClickListener {
             val message = binding.edMessage.text.toString()
             viewModel.broadcastMessage(message)
+
+            val messageSentText =
+                if (viewModel.serverOnFlow.value)
+                    R.string.activity_server_message_sent
+                else
+                    R.string.activity_server_message_not_sent
+
             Toast.makeText(
                 baseContext,
-                R.string.activity_server_message_sent,
+                messageSentText,
                 Toast.LENGTH_SHORT
             ).show()
         }

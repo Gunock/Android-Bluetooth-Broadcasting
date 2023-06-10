@@ -70,7 +70,7 @@ class ClientActivity : AppCompatActivity() {
         if (bluetoothAdapter == null) {
             Toast.makeText(
                 baseContext,
-                "Oops! It looks like your device doesn't have bluetooth!",
+                R.string.toast_no_bluetooth,
                 Toast.LENGTH_SHORT
             ).show()
             return

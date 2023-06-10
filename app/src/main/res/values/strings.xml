@@ -3,6 +3,8 @@
     <string name="label_client_activity">Bluetooth Client</string>
     <string name="label_server_activity">Bluetooth Server</string>
 
+    <string name="toast_no_bluetooth">Oops! It looks like your device doesn\'t have bluetooth!</string>
+
     <string name="activity_main_btn_client">Client</string>
     <string name="activity_main_btn_server">Server</string>
 
@@ -19,6 +21,7 @@
     <string name="activity_server_send_message">Send message</string>
     <string name="activity_server_stop_server">Stop server</string>
     <string name="activity_server_message_sent">Message has been sent</string>
+    <string name="activity_server_message_not_sent">You must start server first</string>
 
     <string name="dialog_fragment_close">Close</string>
 
