@@ -15,7 +15,7 @@
         android:id="@+id/tv_item_device_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
+        android:layout_marginStart="48dp"
         android:background="@android:color/transparent"
         android:text="@string/placeholder_bt_device"
         android:textSize="18sp"
@@ -29,22 +29,24 @@
         style="@style/Theme.BluetoothBroadcasting.Icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:contentDescription="@string/item_img_desc_available"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/baseline_bluetooth_connected_24"
-        android:contentDescription="@string/item_img_desc_available" />
+        app:srcCompat="@drawable/baseline_bluetooth_connected_24" />
 
     <ImageView
         android:id="@+id/imv_device_disconnected"
         style="@style/Theme.BluetoothBroadcasting.Icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:contentDescription="@string/item_img_desc_not_available"
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/baseline_bluetooth_disabled_24"
-        android:contentDescription="@string/item_img_desc_not_available" />
+        app:srcCompat="@drawable/baseline_bluetooth_disabled_24" />
 </androidx.constraintlayout.widget.ConstraintLayout>

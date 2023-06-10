@@ -12,7 +12,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
@@ -22,6 +21,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import pl.gunock.bluetoothbroadcasting.R
 import pl.gunock.bluetoothbroadcasting.databinding.DialogFragmentPickDeviceBinding
 import pl.gunock.bluetoothbroadcasting.lib.BluetoothServiceDiscoveryManager
@@ -54,13 +54,12 @@ class PickDeviceDialogFragment(
         viewModel =
             ViewModelProvider(requireActivity())[PickDeviceDialogViewModel::class.java]
 
-        val theDialogView =
-            onCreateView(layoutInflater, null, savedInstanceState)
+        binding = DialogFragmentPickDeviceBinding.inflate(layoutInflater)
 
         return MaterialAlertDialogBuilder(requireActivity())
-            .setView(theDialogView)
             .setTitle(R.string.dialog_fragment_pick_device_title)
             .setNegativeButton(R.string.dialog_fragment_close, null)
+            .setView(binding.root)
             .create()
     }
 
@@ -69,8 +68,6 @@ class PickDeviceDialogFragment(
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = DialogFragmentPickDeviceBinding.inflate(inflater)
-
         setupRecyclerView()
 
         return binding.root
@@ -105,10 +102,6 @@ class PickDeviceDialogFragment(
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context)
             adapter = recyclerViewAdapter
-
-            addItemDecoration(
-                DividerItemDecoration(context, DividerItemDecoration.VERTICAL)
-            )
         }
 
         lifecycleScope.launch(Dispatchers.IO) { checkDeviceStates() }
@@ -122,8 +115,10 @@ class PickDeviceDialogFragment(
                     return@onEach
                 }
                 recyclerViewAdapter.submitList(devices)
-                binding.pbBluetoothDevices.visibility =
-                    if (devices.isNotEmpty()) View.GONE else View.VISIBLE
+                withContext(Dispatchers.Main) {
+                    binding.pbBluetoothDevices.visibility =
+                        if (devices.isNotEmpty()) View.GONE else View.VISIBLE
+                }
             }.flowOn(Dispatchers.Default)
             .launchIn(lifecycleScope)
     }
@@ -133,7 +128,7 @@ class PickDeviceDialogFragment(
             try {
                 val pairedDevices = bluetoothManager.adapter
                     .bondedDevices
-                    .toMutableList()
+                    ?.toMutableList() ?: mutableListOf()
                 serviceDiscoveryManager.discoverServicesInDevices(pairedDevices)
             } catch (ex: SecurityException) {
                 requireActivity().finish()

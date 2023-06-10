@@ -49,8 +49,11 @@ class ClientActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val rootBinding = ActivityClientBinding.inflate(layoutInflater)
         binding = rootBinding.content
-        setContentView(rootBinding.root)
 
+        setSupportActionBar(rootBinding.toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        setContentView(rootBinding.root)
 
         pickDeviceDialogViewModel =
             ViewModelProvider(this)[PickDeviceDialogViewModel::class.java]
