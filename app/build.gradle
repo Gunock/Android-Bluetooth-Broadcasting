@@ -10,11 +10,10 @@ android {
     def minor = 1
     def patch = 0
 
-    compileSdkVersion rootProject.compileSdkVersion
-
     defaultConfig {
         applicationId "pl.gunock.bluetoothbroadcasting"
         minSdkVersion rootProject.minSdkVersion
+        compileSdk rootProject.compileSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
         versionCode major * 100000000 + minor * 10000 + patch
         versionName "$major.$minor.$patch"

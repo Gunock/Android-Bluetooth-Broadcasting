@@ -5,9 +5,12 @@ import android.annotation.SuppressLint
 import android.bluetooth.BluetoothSocket
 import android.util.Log
 import androidx.annotation.RequiresPermission
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.IOException
-import java.util.*
 
 class BluetoothClient(
     private val socket: BluetoothSocket

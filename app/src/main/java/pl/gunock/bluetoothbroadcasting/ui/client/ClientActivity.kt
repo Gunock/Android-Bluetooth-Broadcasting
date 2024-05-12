@@ -73,6 +73,7 @@ class ClientActivity : AppCompatActivity() {
                 R.string.toast_no_bluetooth,
                 Toast.LENGTH_SHORT
             ).show()
+            finish()
             return
         }
 

@@ -5,10 +5,10 @@ plugins {
 
 android {
     namespace 'pl.gunock.bluetoothbroadcasting.lib'
-    compileSdk rootProject.targetSdkVersion
 
     defaultConfig {
         minSdk rootProject.minSdkVersion
+        compileSdk rootProject.targetSdkVersion
         targetSdk rootProject.targetSdkVersion
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
