@@ -1,8 +1,8 @@
 plugins {
-    id 'kotlin-kapt'
-    id 'com.android.application'
-    id 'kotlin-android'
-    id 'dagger.hilt.android.plugin'
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -12,9 +12,9 @@ android {
 
     defaultConfig {
         applicationId "pl.gunock.bluetoothbroadcasting"
-        minSdkVersion rootProject.minSdkVersion
-        compileSdk rootProject.compileSdkVersion
-        targetSdkVersion rootProject.targetSdkVersion
+        minSdkVersion 23
+        compileSdk 35
+        targetSdkVersion 35
         versionCode major * 100000000 + minor * 10000 + patch
         versionName "$major.$minor.$patch"
     }
@@ -42,29 +42,24 @@ android {
 
 dependencies {
     // Submodules
-    implementation project(':bluetooth')
+    implementation(project(':bluetooth'))
 
     // App dependencies
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
-    implementation "com.google.android.material:material:$materialVersion"
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.android.material)
 
     // AndroidX
-    implementation "androidx.core:core-ktx:$androidXCoreVersion"
-    implementation "androidx.appcompat:appcompat:$appCompatVersion"
-    implementation "androidx.activity:activity-ktx:$androidXActivityVersion"
-    implementation "androidx.annotation:annotation:$androidXAnnotatinVersion"
-    implementation "androidx.constraintlayout:constraintlayout:$constraintLayoutVersion"
-    implementation "androidx.recyclerview:recyclerview:$recyclerViewVersion"
+    implementation(libs.androidx.coreKtx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.activityKtx)
+    implementation(libs.androidx.annotation)
+    implementation(libs.androidx.constraintLayout)
+    implementation(libs.androidx.recyclerView)
 
     // Hilt
-    implementation "com.google.dagger:hilt-android:$hilt_version"
-    kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
+    implementation(libs.hilt)
+    ksp(libs.hiltCompiler)
 
     // LeakCanary
 //    debugImplementation "com.squareup.leakcanary:leakcanary-android:$leakCanaryVersion"
-}
-
-// Allow references to generated code
-kapt {
-    correctErrorTypes true
 }

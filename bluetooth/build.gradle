@@ -1,15 +1,15 @@
 plugins {
-    id 'com.android.library'
-    id 'org.jetbrains.kotlin.android'
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
 }
 
 android {
     namespace 'pl.gunock.bluetoothbroadcasting.lib'
 
     defaultConfig {
-        minSdk rootProject.minSdkVersion
-        compileSdk rootProject.targetSdkVersion
-        targetSdk rootProject.targetSdkVersion
+        minSdk 23
+        compileSdk 35
+        targetSdk 35
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -31,7 +31,7 @@ android {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
+    implementation(libs.kotlinx.coroutines.android)
 
-    implementation "androidx.annotation:annotation:$androidXAnnotatinVersion"
+    implementation(libs.androidx.annotation)
 }
