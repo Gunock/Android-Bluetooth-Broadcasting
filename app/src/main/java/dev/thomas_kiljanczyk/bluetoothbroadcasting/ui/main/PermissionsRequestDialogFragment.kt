@@ -2,9 +2,9 @@ package dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.main
 
 import android.app.Dialog
 import android.os.Bundle
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.thomas_kiljanczyk.bluetoothbroadcasting.R
 import kotlin.system.exitProcess
 
