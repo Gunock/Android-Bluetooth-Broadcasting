@@ -22,7 +22,7 @@ class PermissionsRequestDialogFragment(
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val fragmentActivity = requireActivity()
 
-        return AlertDialog.Builder(fragmentActivity)
+        return MaterialAlertDialogBuilder(fragmentActivity)
             .setMessage(R.string.dialog_fragment_permissions_request_message)
             .setPositiveButton(R.string.dialog_fragment_permissions_request_proceed) { _, _ ->
                 onPermissionRequestResult.invoke()
