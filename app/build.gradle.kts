@@ -6,43 +6,46 @@ plugins {
 }
 
 android {
-    def major = 0
-    def minor = 1
-    def patch = 0
+    val major = 0
+    val minor = 1
+    val patch = 0
 
     defaultConfig {
-        applicationId "pl.gunock.bluetoothbroadcasting"
-        minSdkVersion 23
-        compileSdk 35
-        targetSdkVersion 35
-        versionCode major * 100000000 + minor * 10000 + patch
-        versionName "$major.$minor.$patch"
+        applicationId = "pl.gunock.bluetoothbroadcasting"
+        minSdk = 23
+        compileSdk = 35
+        targetSdk = 35
+        versionCode = major * 100000000 + minor * 10000 + patch
+        versionName = "$major.$minor.$patch"
     }
 
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            isMinifyEnabled = false
+            proguardFiles(
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro"
+            )
         }
     }
 
     buildFeatures {
-        viewBinding true
+        viewBinding = true
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_21
-        targetCompatibility JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     kotlinOptions {
-        jvmTarget = '21'
+        jvmTarget = "21"
     }
-    namespace 'pl.gunock.bluetoothbroadcasting'
+    namespace = "pl.gunock.bluetoothbroadcasting"
 }
 
 dependencies {
     // Submodules
-    implementation(project(':bluetooth'))
+    implementation(project(":bluetooth"))
 
     // App dependencies
     implementation(libs.kotlinx.coroutines.android)
