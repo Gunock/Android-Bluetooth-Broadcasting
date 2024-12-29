@@ -1,4 +1,4 @@
-package pl.gunock.bluetoothbroadcasting.ui.client.pickserver
+package dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.client.pickserver
 
 import android.app.Dialog
 import android.bluetooth.BluetoothDevice
@@ -22,9 +22,9 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import pl.gunock.bluetoothbroadcasting.R
-import pl.gunock.bluetoothbroadcasting.databinding.DialogFragmentPickDeviceBinding
-import pl.gunock.bluetoothbroadcasting.lib.BluetoothServiceDiscoveryManager
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.R
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.databinding.DialogFragmentPickDeviceBinding
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.lib.BluetoothServiceDiscoveryManager
 import javax.inject.Inject
 
 

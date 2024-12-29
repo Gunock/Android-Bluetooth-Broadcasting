@@ -1,4 +1,4 @@
-package pl.gunock.bluetoothbroadcasting.ui.server
+package dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.server
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
@@ -14,9 +14,9 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import pl.gunock.bluetoothbroadcasting.R
-import pl.gunock.bluetoothbroadcasting.databinding.ActivityServerBinding
-import pl.gunock.bluetoothbroadcasting.databinding.ContentServerBinding
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.R
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.databinding.ActivityServerBinding
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.databinding.ContentServerBinding
 import javax.inject.Inject
 
 @AndroidEntryPoint

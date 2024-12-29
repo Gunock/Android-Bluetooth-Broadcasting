@@ -1,4 +1,4 @@
-package pl.gunock.bluetoothbroadcasting.lib.extensions
+package dev.thomas_kiljanczyk.bluetoothbroadcasting.lib.extensions
 
 import android.os.ParcelUuid
 import java.nio.ByteBuffer

@@ -1,15 +1,15 @@
-package pl.gunock.bluetoothbroadcasting.ui.main
+package dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.main
 
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import pl.gunock.bluetoothbroadcasting.application.BluetoothApplication
-import pl.gunock.bluetoothbroadcasting.databinding.ActivityMainBinding
-import pl.gunock.bluetoothbroadcasting.databinding.ContentMainBinding
-import pl.gunock.bluetoothbroadcasting.ui.client.ClientActivity
-import pl.gunock.bluetoothbroadcasting.ui.server.ServerActivity
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.application.BluetoothApplication
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.databinding.ActivityMainBinding
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.databinding.ContentMainBinding
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.client.ClientActivity
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.server.ServerActivity
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ContentMainBinding

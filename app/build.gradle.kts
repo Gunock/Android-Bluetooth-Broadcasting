@@ -11,7 +11,7 @@ android {
     val patch = 0
 
     defaultConfig {
-        applicationId = "pl.gunock.bluetoothbroadcasting"
+        applicationId = "dev.thomas_kiljanczyk.bluetoothbroadcasting"
         minSdk = 23
         compileSdk = 35
         targetSdk = 35
@@ -40,7 +40,7 @@ android {
     kotlinOptions {
         jvmTarget = "21"
     }
-    namespace = "pl.gunock.bluetoothbroadcasting"
+    namespace = "dev.thomas_kiljanczyk.bluetoothbroadcasting"
 }
 
 dependencies {

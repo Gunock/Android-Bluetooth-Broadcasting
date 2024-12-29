@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "pl.gunock.bluetoothbroadcasting.lib"
+    namespace = "dev.thomas_kiljanczyk.bluetoothbroadcasting.lib"
 
     defaultConfig {
         minSdk = 23

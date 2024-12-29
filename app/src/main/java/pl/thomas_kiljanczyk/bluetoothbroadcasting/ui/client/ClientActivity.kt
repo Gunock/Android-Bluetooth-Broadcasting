@@ -1,4 +1,4 @@
-package pl.gunock.bluetoothbroadcasting.ui.client
+package dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.client
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
@@ -17,11 +17,11 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import pl.gunock.bluetoothbroadcasting.R
-import pl.gunock.bluetoothbroadcasting.databinding.ActivityClientBinding
-import pl.gunock.bluetoothbroadcasting.databinding.ContentClientBinding
-import pl.gunock.bluetoothbroadcasting.ui.client.pickserver.PickDeviceDialogFragment
-import pl.gunock.bluetoothbroadcasting.ui.client.pickserver.PickDeviceDialogViewModel
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.R
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.databinding.ActivityClientBinding
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.databinding.ContentClientBinding
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.client.pickserver.PickDeviceDialogFragment
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.client.pickserver.PickDeviceDialogViewModel
 import javax.inject.Inject
 
 @AndroidEntryPoint

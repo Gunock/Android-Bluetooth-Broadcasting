@@ -32,7 +32,7 @@
     <uses-feature android:name="android.software.companion_device_setup" />
 
     <application
-        android:name="pl.gunock.bluetoothbroadcasting.application.BluetoothApplication"
+        android:name="dev.thomas_kiljanczyk.bluetoothbroadcasting.application.BluetoothApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -40,7 +40,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BluetoothBroadcasting">
         <activity
-            android:name="pl.gunock.bluetoothbroadcasting.ui.main.MainActivity"
+            android:name="dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.main.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -50,7 +50,7 @@
         </activity>
 
         <activity
-            android:name="pl.gunock.bluetoothbroadcasting.ui.client.ClientActivity"
+            android:name="dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.client.ClientActivity"
             android:label="@string/label_client_activity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -58,7 +58,7 @@
         </activity>
 
         <activity
-            android:name="pl.gunock.bluetoothbroadcasting.ui.server.ServerActivity"
+            android:name="dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.server.ServerActivity"
             android:label="@string/label_server_activity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

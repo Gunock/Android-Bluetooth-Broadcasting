@@ -1,4 +1,4 @@
-package pl.gunock.bluetoothbroadcasting.application
+package dev.thomas_kiljanczyk.bluetoothbroadcasting.application
 
 import android.Manifest
 import android.app.Application

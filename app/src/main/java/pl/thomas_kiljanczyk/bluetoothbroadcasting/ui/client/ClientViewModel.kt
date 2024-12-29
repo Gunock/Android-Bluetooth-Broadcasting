@@ -1,4 +1,4 @@
-package pl.gunock.bluetoothbroadcasting.ui.client
+package dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.client
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -14,8 +14,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import pl.gunock.bluetoothbroadcasting.R
-import pl.gunock.bluetoothbroadcasting.lib.BluetoothClient
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.R
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.lib.BluetoothClient
 import java.util.*
 import javax.inject.Inject
 

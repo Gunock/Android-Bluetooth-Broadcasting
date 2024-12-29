@@ -1,4 +1,4 @@
-package pl.gunock.bluetoothbroadcasting.lib
+package dev.thomas_kiljanczyk.bluetoothbroadcasting.lib
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -15,8 +15,8 @@ import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import pl.gunock.bluetoothbroadcasting.lib.BluetoothServiceDiscoveryManager.Companion.TAG
-import pl.gunock.bluetoothbroadcasting.lib.extensions.order
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.lib.BluetoothServiceDiscoveryManager.Companion.TAG
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.lib.extensions.order
 import java.nio.ByteOrder
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read

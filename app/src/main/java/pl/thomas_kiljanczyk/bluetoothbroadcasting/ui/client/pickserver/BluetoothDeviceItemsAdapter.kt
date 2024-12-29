@@ -1,4 +1,4 @@
-package pl.gunock.bluetoothbroadcasting.ui.client.pickserver
+package dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.client.pickserver
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import pl.gunock.bluetoothbroadcasting.databinding.ItemBluetoothDeviceBinding
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.databinding.ItemBluetoothDeviceBinding
 
 // TODO: Implement loading spinner for empty state
 class BluetoothDeviceItemsAdapter(

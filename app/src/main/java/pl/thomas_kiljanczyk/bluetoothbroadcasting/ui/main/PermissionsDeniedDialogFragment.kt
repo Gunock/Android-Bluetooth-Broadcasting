@@ -1,4 +1,4 @@
-package pl.gunock.bluetoothbroadcasting.ui.main
+package dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.main
 
 import android.app.Dialog
 import android.content.DialogInterface
@@ -9,7 +9,7 @@ import android.provider.Settings
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
-import pl.gunock.bluetoothbroadcasting.R
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.R
 import kotlin.system.exitProcess
 
 class PermissionsDeniedDialogFragment(
