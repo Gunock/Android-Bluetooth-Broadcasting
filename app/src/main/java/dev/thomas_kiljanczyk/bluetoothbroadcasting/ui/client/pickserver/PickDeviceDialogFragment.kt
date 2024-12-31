@@ -1,37 +1,33 @@
 package dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.client.pickserver
 
 import android.app.Dialog
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
-import android.content.IntentFilter
 import android.os.Bundle
-import android.os.ParcelUuid
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.gms.nearby.connection.ConnectionsClient
+import com.google.android.gms.nearby.connection.DiscoveredEndpointInfo
+import com.google.android.gms.nearby.connection.DiscoveryOptions
+import com.google.android.gms.nearby.connection.EndpointDiscoveryCallback
+import com.google.android.gms.nearby.connection.Strategy
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import dev.thomas_kiljanczyk.bluetoothbroadcasting.R
 import dev.thomas_kiljanczyk.bluetoothbroadcasting.databinding.DialogFragmentPickDeviceBinding
-import dev.thomas_kiljanczyk.bluetoothbroadcasting.lib.BluetoothServiceDiscoveryManager
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.shared.Constants
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
 @AndroidEntryPoint
-class PickDeviceDialogFragment(
-    private val serviceUuid: ParcelUuid,
-) : DialogFragment() {
+class PickDeviceDialogFragment : DialogFragment() {
     companion object {
         const val TAG = "PickDeviceDialogFrag"
     }
@@ -43,14 +39,14 @@ class PickDeviceDialogFragment(
     private lateinit var recyclerViewAdapter: BluetoothDeviceItemsAdapter
 
     @Inject
-    lateinit var bluetoothManager: BluetoothManager
+    lateinit var connectionsClient: ConnectionsClient
 
     @Inject
-    lateinit var serviceDiscoveryManager: BluetoothServiceDiscoveryManager
+    lateinit var bluetoothManager: BluetoothManager
+
+    private val deviceMap = mutableMapOf<String, BluetoothDeviceItem>()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        serviceDiscoveryManager.setExpectedUuids(listOf(serviceUuid))
-
         viewModel =
             ViewModelProvider(requireActivity())[PickDeviceDialogViewModel::class.java]
 
@@ -70,30 +66,60 @@ class PickDeviceDialogFragment(
     ): View {
         setupRecyclerView()
 
+        val discoveryOptions = DiscoveryOptions.Builder().setStrategy(Strategy.P2P_STAR).build()
+        connectionsClient
+            .startDiscovery(
+                Constants.SERVICE_UUID.toString(),
+                object : EndpointDiscoveryCallback() {
+                    override fun onEndpointFound(endpointId: String, info: DiscoveredEndpointInfo) {
+                        val deviceItem = BluetoothDeviceItem(info.endpointName, endpointId, true)
+                        deviceMap[endpointId] = deviceItem
+
+                        val devices = deviceMap.values.toList()
+                        recyclerViewAdapter.submitList(devices)
+
+                        CoroutineScope(Dispatchers.Main).launch {
+                            binding.pbBluetoothDevices.visibility =
+                                if (devices.isNotEmpty()) View.GONE else View.VISIBLE
+                        }
+                    }
+
+                    override fun onEndpointLost(endpointId: String) {
+                        deviceMap.remove(endpointId)
+
+                        val devices = deviceMap.values.toList()
+                        recyclerViewAdapter.submitList(devices)
+
+                        CoroutineScope(Dispatchers.Main).launch {
+                            binding.pbBluetoothDevices.visibility =
+                                if (devices.isNotEmpty()) View.GONE else View.VISIBLE
+                        }
+                    }
+
+                },
+                discoveryOptions
+            )
+            .addOnSuccessListener { unused ->
+                // We're discovering!
+            }
+            .addOnFailureListener { e ->
+                // We're unable to start discovering.
+                Log.e(TAG, "Failed to start discovering", e)
+            }
+
         return binding.root
     }
 
-    override fun onResume() {
-        super.onResume()
-
-        requireActivity().registerReceiver(
-            serviceDiscoveryManager.getBroadcastReceiver(),
-            IntentFilter(BluetoothDevice.ACTION_UUID)
-        )
+    override fun onDestroy() {
+        connectionsClient.stopDiscovery()
+        super.onDestroy()
     }
-
-    override fun onPause() {
-        super.onPause()
-
-        requireActivity().unregisterReceiver(serviceDiscoveryManager.getBroadcastReceiver())
-    }
-
 
     private fun setupRecyclerView() {
         recyclerViewAdapter = BluetoothDeviceItemsAdapter(
             binding.rcvBluetoothDevices.context
         ) { item: BluetoothDeviceItem ->
-            if (viewModel.pickBluetoothDeviceItem(item)) {
+            if (viewModel.pickDevice(item)) {
                 dismiss()
             }
         }
@@ -102,40 +128,6 @@ class PickDeviceDialogFragment(
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context)
             adapter = recyclerViewAdapter
-        }
-
-        lifecycleScope.launch(Dispatchers.IO) { checkDeviceStates() }
-
-        serviceDiscoveryManager.getBluetoothDevices()
-            .onEach { collection ->
-                val devices = try {
-                    collection.map { BluetoothDeviceItem(it.name, it.address, true) }
-                } catch (ex: SecurityException) {
-                    requireActivity().finish()
-                    return@onEach
-                }
-                recyclerViewAdapter.submitList(devices)
-                withContext(Dispatchers.Main) {
-                    binding.pbBluetoothDevices.visibility =
-                        if (devices.isNotEmpty()) View.GONE else View.VISIBLE
-                }
-            }.flowOn(Dispatchers.Default)
-            .launchIn(lifecycleScope)
-    }
-
-    private suspend fun checkDeviceStates() {
-        while (true) {
-            try {
-                val pairedDevices = bluetoothManager.adapter
-                    .bondedDevices
-                    ?.toMutableList() ?: mutableListOf()
-                serviceDiscoveryManager.discoverServicesInDevices(pairedDevices)
-            } catch (ex: SecurityException) {
-                requireActivity().finish()
-                return
-            }
-
-            delay(20000)
         }
     }
 }

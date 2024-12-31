@@ -21,4 +21,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "BluetoothBroadcasting"
 include(":app")
-include(":bluetooth")

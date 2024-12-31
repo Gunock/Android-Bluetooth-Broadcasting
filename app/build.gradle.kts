@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "dev.thomas_kiljanczyk.bluetoothbroadcasting"
-        minSdk = 23
+        minSdk = 25
         compileSdk = 35
         targetSdk = 35
         versionCode = major * 100000000 + minor * 10000 + patch
@@ -44,9 +44,6 @@ android {
 }
 
 dependencies {
-    // Submodules
-    implementation(project(":bluetooth"))
-
     // App dependencies
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.android.material)
@@ -61,6 +58,7 @@ dependencies {
 
     // Hilt
     implementation(libs.hilt)
+    implementation(libs.play.services.nearby)
     ksp(libs.hiltCompiler)
 
     // LeakCanary

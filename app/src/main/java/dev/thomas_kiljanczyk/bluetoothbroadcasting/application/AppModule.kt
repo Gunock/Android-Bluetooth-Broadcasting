@@ -2,6 +2,8 @@ package dev.thomas_kiljanczyk.bluetoothbroadcasting.application
 
 import android.bluetooth.BluetoothManager
 import android.content.Context
+import com.google.android.gms.nearby.Nearby
+import com.google.android.gms.nearby.connection.ConnectionsClient
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,4 +19,8 @@ object AppModule {
         return context.getSystemService(BluetoothManager::class.java)
     }
 
+    @Provides
+    fun provideConnectionsClient(@ApplicationContext context: Context): ConnectionsClient {
+        return Nearby.getConnectionsClient(context)
+    }
 }

@@ -36,6 +36,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         val rootBinding = ActivityMainBinding.inflate(layoutInflater)
         binding = rootBinding.content
 

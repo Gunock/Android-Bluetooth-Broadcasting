@@ -2,32 +2,32 @@ package dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.client
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothDevice
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import com.google.android.gms.nearby.connection.ConnectionInfo
+import com.google.android.gms.nearby.connection.ConnectionLifecycleCallback
+import com.google.android.gms.nearby.connection.ConnectionResolution
+import com.google.android.gms.nearby.connection.ConnectionsClient
+import com.google.android.gms.nearby.connection.Payload
+import com.google.android.gms.nearby.connection.PayloadCallback
+import com.google.android.gms.nearby.connection.PayloadTransferUpdate
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.R
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
-import dev.thomas_kiljanczyk.bluetoothbroadcasting.R
-import dev.thomas_kiljanczyk.bluetoothbroadcasting.lib.BluetoothClient
-import java.util.*
 import javax.inject.Inject
 
+
 @HiltViewModel
-class ClientViewModel @Inject constructor() : ViewModel() {
+class ClientViewModel @Inject constructor(
+    private val connectionsClient: ConnectionsClient
+) : ViewModel() {
     companion object {
         private const val TAG = "ClientViewModel"
-
-        val SERVICE_UUID: UUID = UUID.fromString("2f58e6c0-5ccf-4d2f-afec-65a2d98e2141")
     }
-
-    private var bluetoothClient: BluetoothClient? = null
 
     private val _clientStatus: MutableStateFlow<Pair<Int, String?>> =
         MutableStateFlow(Pair(R.string.activity_client_disconnected, null))
@@ -38,42 +38,66 @@ class ClientViewModel @Inject constructor() : ViewModel() {
 
     @SuppressLint("InlinedApi")
     @RequiresPermission(anyOf = [Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH])
-    fun setClient(device: BluetoothDevice) {
-        val bluetoothSocket = device.createRfcommSocketToServiceRecord(SERVICE_UUID)
-        val bluetoothClient = BluetoothClient(bluetoothSocket)
+    fun startClient(endpointId: String, deviceName: String) {
+        connectionsClient.requestConnection(
+            deviceName,
+            endpointId,
+            object : ConnectionLifecycleCallback() {
+                var connectionInfo: ConnectionInfo? = null
 
-        bluetoothClient.setOnDataListener {
-            val text = it.decodeToString()
-            Log.i(TAG, "Received message '$text'")
-            _receivedText.tryEmit(text)
-        }
+                override fun onConnectionInitiated(
+                    endpointId: String,
+                    info: ConnectionInfo
+                ) {
+                    connectionInfo = info
 
-        bluetoothClient.setOnConnectionSuccessListener {
-            _clientStatus.value = Pair(R.string.activity_client_connected, it.remoteDevice.name)
-        }
+                    connectionsClient.acceptConnection(endpointId, object : PayloadCallback() {
+                        override fun onPayloadReceived(
+                            endpointId: String,
+                            payload: Payload
+                        ) {
+                            // TODO: handle null text
+                            val text = payload.asBytes()?.decodeToString()
+                            if (text != null) {
+                                Log.i(TAG, "Received message '$text'")
+                                _receivedText.tryEmit(text)
+                            }
+                        }
 
-        bluetoothClient.setOnConnectionFailureListener {
-            _clientStatus.value = Pair(R.string.activity_client_disconnected, null)
-        }
+                        override fun onPayloadTransferUpdate(
+                            endpointId: String,
+                            payload: PayloadTransferUpdate
+                        ) {
+                        }
+                    })
+                }
 
-        bluetoothClient.setOnDisconnectionListener {
-            _clientStatus.value = Pair(R.string.activity_client_disconnected, null)
-        }
+                override fun onConnectionResult(
+                    endpointId: String,
+                    result: ConnectionResolution
+                ) {
+                    if (result.status.isSuccess) {
+                        // TODO: replace endpoint id with unknown
+                        _clientStatus.value = Pair(
+                            R.string.activity_client_connected,
+                            connectionInfo?.endpointName ?: endpointId
+                        )
+                    } else {
+                        _clientStatus.value = Pair(R.string.activity_client_disconnected, null)
+                        connectionInfo = null
+                    }
+                }
 
-        this.bluetoothClient = bluetoothClient
-    }
-
-    @SuppressLint("InlinedApi")
-    @RequiresPermission(anyOf = [Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH])
-    fun startClient() {
-        viewModelScope.launch(Dispatchers.IO) {
-            Log.i(TAG, "Started listening")
-            bluetoothClient?.startLoop()
-        }
+                override fun onDisconnected(endpointId: String) {
+                    connectionsClient.disconnectFromEndpoint(endpointId)
+                    _clientStatus.value = Pair(R.string.activity_client_disconnected, null)
+                    connectionInfo = null
+                }
+            })
     }
 
     fun stopClient() {
-        viewModelScope.launch(Dispatchers.Default) { bluetoothClient?.disconnect() }
+        connectionsClient.stopAllEndpoints()
         Log.i(TAG, "Client disconnected")
     }
 

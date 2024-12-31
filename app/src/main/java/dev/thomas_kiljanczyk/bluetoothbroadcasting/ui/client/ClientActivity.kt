@@ -4,7 +4,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Intent
 import android.os.Bundle
-import android.os.ParcelUuid
+import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
@@ -15,13 +15,13 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import dev.thomas_kiljanczyk.bluetoothbroadcasting.R
 import dev.thomas_kiljanczyk.bluetoothbroadcasting.databinding.ActivityClientBinding
 import dev.thomas_kiljanczyk.bluetoothbroadcasting.databinding.ContentClientBinding
 import dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.client.pickserver.PickDeviceDialogFragment
 import dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.client.pickserver.PickDeviceDialogViewModel
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -86,13 +86,12 @@ class ClientActivity : AppCompatActivity() {
     private fun setupListeners() {
         binding.btnPickServerDevice.setOnClickListener {
             PickDeviceDialogFragment(
-                ParcelUuid(ClientViewModel.SERVICE_UUID)
             ).apply {
                 setStyle(DialogFragment.STYLE_NORMAL, R.style.Theme_BluetoothBroadcasting_Dialog)
                 show(supportFragmentManager, PickDeviceDialogFragment.TAG)
             }
 
-            pickDeviceDialogViewModel.resetPickedBluetoothDevice()
+            pickDeviceDialogViewModel.resetPickedDevice()
         }
 
         binding.btnDisconnect.setOnClickListener {
@@ -115,7 +114,7 @@ class ClientActivity : AppCompatActivity() {
             .onEach { binding.tvMessagePreview.text = it }
             .launchIn(lifecycleScope)
 
-        pickDeviceDialogViewModel.bluetoothDeviceAddress
+        pickDeviceDialogViewModel.serverEndpointId
             .onEach(this::observeDialogBluetoothDevice)
             .launchIn(lifecycleScope)
 
@@ -127,14 +126,15 @@ class ClientActivity : AppCompatActivity() {
             }.launchIn(lifecycleScope)
     }
 
-    private fun observeDialogBluetoothDevice(deviceAddress: String?) {
-        val bluetoothAdapter = bluetoothManager.adapter
-        val device = bluetoothAdapter.getRemoteDevice(deviceAddress ?: return)
-
+    private fun observeDialogBluetoothDevice(endpointId: String?) {
         try {
-            viewModel.setClient(device)
-            viewModel.startClient()
+            if (endpointId != null) {
+                val deviceName =
+                    Settings.Global.getString(contentResolver, Settings.Global.DEVICE_NAME)
+                viewModel.startClient(endpointId, deviceName)
+            }
         } catch (ex: SecurityException) {
+            Log.e(TAG, "Failed to start client", ex)
             finish()
             return
         }

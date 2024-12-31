@@ -60,7 +60,7 @@ class BluetoothDeviceItemsAdapter(
             oldItem: BluetoothDeviceItem,
             newItem: BluetoothDeviceItem
         ): Boolean =
-            oldItem.deviceAddress == newItem.deviceAddress
+            oldItem.endpointId == newItem.endpointId
 
         override fun areContentsTheSame(
             oldItem: BluetoothDeviceItem,

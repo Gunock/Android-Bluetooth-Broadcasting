@@ -2,7 +2,7 @@ package dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.client.pickserver
 
 data class BluetoothDeviceItem(
     val deviceName: String,
-    val deviceAddress: String,
+    val endpointId: String,
     val isAvailable: Boolean
 ) {
     override fun equals(other: Any?): Boolean {
@@ -10,10 +10,10 @@ data class BluetoothDeviceItem(
             return false
         }
 
-        return deviceAddress == other.deviceAddress
+        return endpointId == other.endpointId
     }
 
     override fun hashCode(): Int {
-        return deviceAddress.hashCode()
+        return endpointId.hashCode()
     }
 }

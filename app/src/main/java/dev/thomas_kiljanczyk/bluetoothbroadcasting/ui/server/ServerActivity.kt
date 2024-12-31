@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
@@ -12,11 +13,11 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import dev.thomas_kiljanczyk.bluetoothbroadcasting.R
 import dev.thomas_kiljanczyk.bluetoothbroadcasting.databinding.ActivityServerBinding
 import dev.thomas_kiljanczyk.bluetoothbroadcasting.databinding.ContentServerBinding
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -31,12 +32,6 @@ class ServerActivity @Inject constructor() : AppCompatActivity() {
     lateinit var bluetoothManager: BluetoothManager
 
     private lateinit var binding: ContentServerBinding
-
-    private val discoverableActivityResultLauncher =
-        registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult(),
-            this::handleDiscoverableResult
-        )
 
     private val enableBluetoothActivityResultLauncher =
         registerForActivityResult(
@@ -60,6 +55,11 @@ class ServerActivity @Inject constructor() : AppCompatActivity() {
         setupBluetooth()
     }
 
+    override fun onDestroy() {
+        viewModel.stopServer()
+        super.onDestroy()
+    }
+
     private fun setupObservers() {
         viewModel.serverOnFlow
             .onEach {
@@ -70,6 +70,13 @@ class ServerActivity @Inject constructor() : AppCompatActivity() {
 
                 binding.tvServerStatus.text = serverStateText
 
+                if (it) {
+                    binding.btnServerStart.isEnabled = false
+                    binding.btnServerStop.isEnabled = true
+                } else {
+                    binding.btnServerStart.isEnabled = true
+                    binding.btnServerStop.isEnabled = false
+                }
             }.launchIn(lifecycleScope)
 
         viewModel.messageFlow
@@ -80,7 +87,6 @@ class ServerActivity @Inject constructor() : AppCompatActivity() {
 
     private fun setupBluetooth() {
         val bluetoothAdapter = bluetoothManager.adapter
-
         if (bluetoothAdapter == null) {
             Toast.makeText(
                 baseContext,
@@ -95,21 +101,18 @@ class ServerActivity @Inject constructor() : AppCompatActivity() {
             val enableBluetoothIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             enableBluetoothActivityResultLauncher.launch(enableBluetoothIntent)
         }
-
-        try {
-            viewModel.setServer(bluetoothAdapter)
-        } catch (ex: SecurityException) {
-            finish()
-            return
-        }
     }
 
     private fun setupListeners() {
         binding.btnServerStart.setOnClickListener {
-            val discoverableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE)
-            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0)
-
-            discoverableActivityResultLauncher.launch(discoverableIntent)
+            try {
+                val deviceName =
+                    Settings.Global.getString(contentResolver, Settings.Global.DEVICE_NAME)
+                viewModel.startServer(deviceName)
+            } catch (ex: SecurityException) {
+                Log.e(TAG, "Failed to start server", ex)
+                finish()
+            }
         }
 
         binding.btnServerStop.setOnClickListener {
@@ -131,20 +134,6 @@ class ServerActivity @Inject constructor() : AppCompatActivity() {
                 messageSentText,
                 Toast.LENGTH_SHORT
             ).show()
-        }
-    }
-
-    private fun handleDiscoverableResult(result: ActivityResult) {
-        if (result.resultCode == RESULT_CANCELED) {
-            Log.d(TAG, "User refused REQUEST_DISCOVERABLE")
-        } else {
-            Log.i(TAG, "Started listening")
-            try {
-                viewModel.startServer()
-            } catch (ex: SecurityException) {
-                finish()
-                return
-            }
         }
     }
 
