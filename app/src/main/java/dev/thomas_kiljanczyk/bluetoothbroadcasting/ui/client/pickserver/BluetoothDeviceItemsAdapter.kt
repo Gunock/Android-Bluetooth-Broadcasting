@@ -2,7 +2,6 @@ package dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.client.pickserver
 
 import android.content.Context
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -39,14 +38,6 @@ class BluetoothDeviceItemsAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(position: Int) {
             val item: BluetoothDeviceItem = currentList[position]
-
-            if (item.isAvailable) {
-                binding.imvDeviceConnected.visibility = View.VISIBLE
-                binding.imvDeviceDisconnected.visibility = View.GONE
-            } else {
-                binding.imvDeviceConnected.visibility = View.GONE
-                binding.imvDeviceDisconnected.visibility = View.VISIBLE
-            }
 
             binding.tvItemDeviceName.text = item.deviceName
             binding.root.setOnClickListener {

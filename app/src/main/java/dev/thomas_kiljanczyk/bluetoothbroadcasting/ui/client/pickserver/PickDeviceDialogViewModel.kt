@@ -27,14 +27,9 @@ class PickDeviceDialogViewModel @Inject constructor() : ViewModel() {
         _serverEndpointId.value = null
     }
 
-    fun pickDevice(item: BluetoothDeviceItem): Boolean {
-        return if (!item.isAvailable) {
-            false
-        } else {
-            _serverEndpointId.value = item.endpointId
-            Log.i(TAG, "Picked : ${item.deviceName}")
-            true
-        }
+    fun pickDevice(item: BluetoothDeviceItem) {
+        _serverEndpointId.value = item.endpointId
+        Log.i(TAG, "Picked : ${item.deviceName}")
     }
 
 }

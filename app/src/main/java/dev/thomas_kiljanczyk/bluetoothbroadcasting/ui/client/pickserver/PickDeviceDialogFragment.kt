@@ -72,7 +72,7 @@ class PickDeviceDialogFragment : DialogFragment() {
                 Constants.SERVICE_UUID.toString(),
                 object : EndpointDiscoveryCallback() {
                     override fun onEndpointFound(endpointId: String, info: DiscoveredEndpointInfo) {
-                        val deviceItem = BluetoothDeviceItem(info.endpointName, endpointId, true)
+                        val deviceItem = BluetoothDeviceItem(info.endpointName, endpointId)
                         deviceMap[endpointId] = deviceItem
 
                         val devices = deviceMap.values.toList()
@@ -119,9 +119,8 @@ class PickDeviceDialogFragment : DialogFragment() {
         recyclerViewAdapter = BluetoothDeviceItemsAdapter(
             binding.rcvBluetoothDevices.context
         ) { item: BluetoothDeviceItem ->
-            if (viewModel.pickDevice(item)) {
-                dismiss()
-            }
+            viewModel.pickDevice(item)
+            dismiss()
         }
 
         binding.rcvBluetoothDevices.apply {
