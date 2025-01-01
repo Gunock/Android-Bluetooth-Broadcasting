@@ -44,11 +44,6 @@ class BluetoothApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        // TODO: add google play services availability check
-//        if (!isGooglePlayServicesAvailable(applicationContext)) {
-//
-//        }
-
         DynamicColors.applyToActivitiesIfAvailable(this)
     }
 }

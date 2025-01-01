@@ -30,6 +30,12 @@
 
     <string name="dialog_fragment_close">Close</string>
 
+    <string name="dialog_fragment_no_play_services_message">
+        This app requires Google Play Services in order to work.
+        Please ensure Google Play Services are installed on your device.
+    </string>
+    <string name="dialog_fragment_no_play_services_exit_app">Exit app</string>
+
     <string name="dialog_fragment_pick_device_title">Pick server device</string>
     <string name="dialog_fragment_permissions_denied_message">
         This app requires bluetooth permissions in order to work.
