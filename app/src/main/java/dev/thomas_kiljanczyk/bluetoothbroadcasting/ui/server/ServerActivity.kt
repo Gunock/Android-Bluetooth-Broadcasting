@@ -80,8 +80,13 @@ class ServerActivity @Inject constructor() : AppCompatActivity() {
             }.launchIn(lifecycleScope)
 
         viewModel.messageFlow
-            .onEach {
-                Toast.makeText(baseContext, it, Toast.LENGTH_SHORT).show()
+            .onEach { (stringId, deviceName) ->
+                var statusText = getString(stringId)
+                if (deviceName != null) {
+                    statusText = statusText.format(deviceName)
+                }
+
+                Toast.makeText(baseContext, statusText, Toast.LENGTH_SHORT).show()
             }.launchIn(lifecycleScope)
     }
 

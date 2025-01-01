@@ -6,14 +6,12 @@ import android.util.Log
 import androidx.annotation.RequiresPermission
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.nearby.connection.ConnectionInfo
-import com.google.android.gms.nearby.connection.ConnectionLifecycleCallback
 import com.google.android.gms.nearby.connection.ConnectionResolution
 import com.google.android.gms.nearby.connection.ConnectionsClient
-import com.google.android.gms.nearby.connection.Payload
-import com.google.android.gms.nearby.connection.PayloadCallback
-import com.google.android.gms.nearby.connection.PayloadTransferUpdate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.thomas_kiljanczyk.bluetoothbroadcasting.R
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.shared.NearbyConnectionLifecycleCallback
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.shared.SimpleNearbyPayloadCallback
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,64 +34,42 @@ class ClientViewModel @Inject constructor(
     private val _receivedText: MutableSharedFlow<String> = MutableSharedFlow(replay = 1)
     val receivedText: Flow<String> = _receivedText
 
+    private inner class ClientConnectionLifecycleCallback : NearbyConnectionLifecycleCallback() {
+        override fun onConnectionInitiated(
+            endpointId: String, connectionInfo: ConnectionInfo
+        ) {
+            super.onConnectionInitiated(endpointId, connectionInfo)
+            connectionsClient.acceptConnection(endpointId, SimpleNearbyPayloadCallback { payload ->
+                _receivedText.tryEmit(payload?.decodeToString() ?: "")
+            })
+        }
+
+        override fun onConnectionResult(
+            endpointId: String, connectionInfo: ConnectionInfo?, result: ConnectionResolution
+        ) {
+            if (result.status.isSuccess) {
+                val endpointName = connectionInfo?.endpointName
+                _clientStatus.value = Pair(
+                    if (endpointName != null) R.string.activity_client_connected
+                    else R.string.activity_client_connected_unknown, endpointName
+                )
+            } else {
+                _clientStatus.value = Pair(R.string.activity_client_disconnected, null)
+            }
+        }
+
+        override fun onDisconnected(endpointId: String, connectionInfo: ConnectionInfo?) {
+            connectionsClient.disconnectFromEndpoint(endpointId)
+            _clientStatus.value = Pair(R.string.activity_client_disconnected, null)
+        }
+    }
+
     @SuppressLint("InlinedApi")
     @RequiresPermission(anyOf = [Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH])
     fun startClient(endpointId: String, deviceName: String) {
         connectionsClient.requestConnection(
-            deviceName,
-            endpointId,
-            object : ConnectionLifecycleCallback() {
-                var connectionInfo: ConnectionInfo? = null
-
-                override fun onConnectionInitiated(
-                    endpointId: String,
-                    info: ConnectionInfo
-                ) {
-                    connectionInfo = info
-
-                    connectionsClient.acceptConnection(endpointId, object : PayloadCallback() {
-                        override fun onPayloadReceived(
-                            endpointId: String,
-                            payload: Payload
-                        ) {
-                            // TODO: handle null text
-                            val text = payload.asBytes()?.decodeToString()
-                            if (text != null) {
-                                Log.i(TAG, "Received message '$text'")
-                                _receivedText.tryEmit(text)
-                            }
-                        }
-
-                        override fun onPayloadTransferUpdate(
-                            endpointId: String,
-                            payload: PayloadTransferUpdate
-                        ) {
-                        }
-                    })
-                }
-
-                override fun onConnectionResult(
-                    endpointId: String,
-                    result: ConnectionResolution
-                ) {
-                    if (result.status.isSuccess) {
-                        // TODO: replace endpoint id with unknown
-                        _clientStatus.value = Pair(
-                            R.string.activity_client_connected,
-                            connectionInfo?.endpointName ?: endpointId
-                        )
-                    } else {
-                        _clientStatus.value = Pair(R.string.activity_client_disconnected, null)
-                        connectionInfo = null
-                    }
-                }
-
-                override fun onDisconnected(endpointId: String) {
-                    connectionsClient.disconnectFromEndpoint(endpointId)
-                    _clientStatus.value = Pair(R.string.activity_client_disconnected, null)
-                    connectionInfo = null
-                }
-            })
+            deviceName, endpointId, ClientConnectionLifecycleCallback()
+        )
     }
 
     fun stopClient() {

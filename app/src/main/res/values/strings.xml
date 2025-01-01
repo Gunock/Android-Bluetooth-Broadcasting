@@ -10,6 +10,7 @@
 
     <string name="activity_client_connect_to_server">Connect to server</string>
     <string name="activity_client_disconnected">Disconnected</string>
+    <string name="activity_client_connected_unknown">Connected</string>
     <string name="activity_client_connected">Connected (%s)</string>
     <string name="activity_client_no_content">No content yet</string>
     <string name="activity_client_disconnect">Disconnect</string>
@@ -22,6 +23,10 @@
     <string name="activity_server_stop_server">Stop server</string>
     <string name="activity_server_message_sent">Message has been sent</string>
     <string name="activity_server_message_not_sent">You must start server first</string>
+    <string name="activity_server_connected">%s has disconnected</string>
+    <string name="activity_server_connected_unknown">Unknown device has disconnected</string>
+    <string name="activity_server_disconnected">%s has disconnected</string>
+    <string name="activity_server_disconnected_unknown">Unknown device has disconnected</string>
 
     <string name="dialog_fragment_close">Close</string>
 
