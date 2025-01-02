@@ -21,10 +21,9 @@ class MainActivity : AppCompatActivity() {
 
     private val secondPermissionRequestLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { isGranted ->
-            if (!isGranted.values.any { !it }) {
-                return@registerForActivityResult
+            if (isGranted.values.any { !it }) {
+                PermissionsDeniedDialogFragment(::checkPermissions).show(supportFragmentManager)
             }
-            PermissionsDeniedDialogFragment(::checkPermissions).show(supportFragmentManager)
         }
 
     private val firstPermissionRequestLauncher =
@@ -89,11 +88,13 @@ class MainActivity : AppCompatActivity() {
             } -> {
                 return
             }
+
             BluetoothApplication.PERMISSIONS.any(::shouldShowRequestPermissionRationale) -> {
                 PermissionsRequestDialogFragment {
                     secondPermissionRequestLauncher.launch(BluetoothApplication.PERMISSIONS)
                 }.show(supportFragmentManager)
             }
+
             else -> {
                 firstPermissionRequestLauncher.launch(BluetoothApplication.PERMISSIONS)
             }

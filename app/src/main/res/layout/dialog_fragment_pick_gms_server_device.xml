@@ -9,23 +9,23 @@
     <com.google.android.material.divider.MaterialDivider
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="@+id/rcv_bluetooth_devices" />
+        app:layout_constraintTop_toTopOf="@+id/rcv_gms_nearby_server_devices" />
 
     <com.google.android.material.progressindicator.LinearProgressIndicator
-        android:id="@+id/pb_bluetooth_devices"
+        android:id="@+id/pb_gms_nearby_server_devices"
         style="@style/Widget.Material3.LinearProgressIndicator"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
         android:indeterminate="true"
-        app:layout_constraintBottom_toBottomOf="@+id/rcv_bluetooth_devices"
-        app:layout_constraintEnd_toEndOf="@+id/rcv_bluetooth_devices"
-        app:layout_constraintStart_toStartOf="@+id/rcv_bluetooth_devices"
-        app:layout_constraintTop_toTopOf="@+id/rcv_bluetooth_devices" />
+        app:layout_constraintBottom_toBottomOf="@+id/rcv_gms_nearby_server_devices"
+        app:layout_constraintEnd_toEndOf="@+id/rcv_gms_nearby_server_devices"
+        app:layout_constraintStart_toStartOf="@+id/rcv_gms_nearby_server_devices"
+        app:layout_constraintTop_toTopOf="@+id/rcv_gms_nearby_server_devices" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rcv_bluetooth_devices"
+        android:id="@+id/rcv_gms_nearby_server_devices"
         android:layout_width="match_parent"
         android:layout_height="200dp"
         android:layout_marginTop="16dp"
@@ -33,11 +33,11 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:listitem="@layout/item_bluetooth_device" />
+        tools:listitem="@layout/item_gms_server_device" />
 
     <com.google.android.material.divider.MaterialDivider
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="@+id/rcv_bluetooth_devices" />
+        app:layout_constraintBottom_toBottomOf="@+id/rcv_gms_nearby_server_devices" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

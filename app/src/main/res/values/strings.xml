@@ -53,7 +53,7 @@
     <string name="dialog_fragment_permission_close_app">Close app</string>
 
 
-    <string name="placeholder_bt_device">Bluetooth Device</string>
+    <string name="placeholder_gms_nearby_server_device">Bluetooth Device</string>
 
     <string name="item_img_desc_available">Device available</string>
     <string name="item_img_desc_not_available">Device not available</string>

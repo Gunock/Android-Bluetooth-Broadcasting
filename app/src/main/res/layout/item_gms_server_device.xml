@@ -16,7 +16,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="@android:color/transparent"
-        android:text="@string/placeholder_bt_device"
+        android:text="@string/placeholder_gms_nearby_server_device"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

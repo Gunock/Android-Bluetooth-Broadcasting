@@ -1,7 +1,6 @@
-package dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.client.pickserver
+package dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.client.pick_gms_server_device
 
 import android.app.Dialog
-import android.bluetooth.BluetoothManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -18,7 +17,7 @@ import com.google.android.gms.nearby.connection.Strategy
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import dev.thomas_kiljanczyk.bluetoothbroadcasting.R
-import dev.thomas_kiljanczyk.bluetoothbroadcasting.databinding.DialogFragmentPickDeviceBinding
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.databinding.DialogFragmentPickGmsServerDeviceBinding
 import dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.shared.Constants
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -34,23 +33,20 @@ class PickDeviceDialogFragment : DialogFragment() {
 
     private lateinit var viewModel: PickDeviceDialogViewModel
 
-    private lateinit var binding: DialogFragmentPickDeviceBinding
+    private lateinit var binding: DialogFragmentPickGmsServerDeviceBinding
 
-    private lateinit var recyclerViewAdapter: BluetoothDeviceItemsAdapter
+    private lateinit var recyclerViewAdapter: GmsNearbyServerDeviceItemsAdapter
 
     @Inject
     lateinit var connectionsClient: ConnectionsClient
 
-    @Inject
-    lateinit var bluetoothManager: BluetoothManager
-
-    private val deviceMap = mutableMapOf<String, BluetoothDeviceItem>()
+    private val deviceMap = mutableMapOf<String, GmsNearbyServerDeviceItem>()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         viewModel =
             ViewModelProvider(requireActivity())[PickDeviceDialogViewModel::class.java]
 
-        binding = DialogFragmentPickDeviceBinding.inflate(layoutInflater)
+        binding = DialogFragmentPickGmsServerDeviceBinding.inflate(layoutInflater)
 
         return MaterialAlertDialogBuilder(requireActivity())
             .setTitle(R.string.dialog_fragment_pick_device_title)
@@ -72,14 +68,14 @@ class PickDeviceDialogFragment : DialogFragment() {
                 Constants.SERVICE_UUID.toString(),
                 object : EndpointDiscoveryCallback() {
                     override fun onEndpointFound(endpointId: String, info: DiscoveredEndpointInfo) {
-                        val deviceItem = BluetoothDeviceItem(info.endpointName, endpointId)
+                        val deviceItem = GmsNearbyServerDeviceItem(info.endpointName, endpointId)
                         deviceMap[endpointId] = deviceItem
 
                         val devices = deviceMap.values.toList()
                         recyclerViewAdapter.submitList(devices)
 
                         CoroutineScope(Dispatchers.Main).launch {
-                            binding.pbBluetoothDevices.visibility =
+                            binding.pbGmsNearbyServerDevices.visibility =
                                 if (devices.isNotEmpty()) View.GONE else View.VISIBLE
                         }
                     }
@@ -91,7 +87,7 @@ class PickDeviceDialogFragment : DialogFragment() {
                         recyclerViewAdapter.submitList(devices)
 
                         CoroutineScope(Dispatchers.Main).launch {
-                            binding.pbBluetoothDevices.visibility =
+                            binding.pbGmsNearbyServerDevices.visibility =
                                 if (devices.isNotEmpty()) View.GONE else View.VISIBLE
                         }
                     }
@@ -116,14 +112,14 @@ class PickDeviceDialogFragment : DialogFragment() {
     }
 
     private fun setupRecyclerView() {
-        recyclerViewAdapter = BluetoothDeviceItemsAdapter(
-            binding.rcvBluetoothDevices.context
-        ) { item: BluetoothDeviceItem ->
+        recyclerViewAdapter = GmsNearbyServerDeviceItemsAdapter(
+            binding.rcvGmsNearbyServerDevices.context
+        ) { item: GmsNearbyServerDeviceItem ->
             viewModel.pickDevice(item)
             dismiss()
         }
 
-        binding.rcvBluetoothDevices.apply {
+        binding.rcvGmsNearbyServerDevices.apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context)
             adapter = recyclerViewAdapter

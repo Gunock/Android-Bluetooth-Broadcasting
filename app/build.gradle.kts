@@ -47,6 +47,7 @@ dependencies {
     // App dependencies
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.android.material)
+    implementation(libs.play.services.nearby)
 
     // AndroidX
     implementation(libs.androidx.coreKtx)
@@ -58,7 +59,6 @@ dependencies {
 
     // Hilt
     implementation(libs.hilt)
-    implementation(libs.play.services.nearby)
     ksp(libs.hiltCompiler)
 
     // LeakCanary

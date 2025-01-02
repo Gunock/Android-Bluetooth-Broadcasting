@@ -18,8 +18,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.thomas_kiljanczyk.bluetoothbroadcasting.R
 import dev.thomas_kiljanczyk.bluetoothbroadcasting.databinding.ActivityClientBinding
 import dev.thomas_kiljanczyk.bluetoothbroadcasting.databinding.ContentClientBinding
-import dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.client.pickserver.PickDeviceDialogFragment
-import dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.client.pickserver.PickDeviceDialogViewModel
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.client.pick_gms_server_device.PickDeviceDialogFragment
+import dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.client.pick_gms_server_device.PickDeviceDialogViewModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
@@ -39,11 +39,9 @@ class ClientActivity : AppCompatActivity() {
 
     private lateinit var pickDeviceDialogViewModel: PickDeviceDialogViewModel
 
-    private val enableBluetoothActivityResultLauncher =
-        registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult(),
-            this::handleEnableBluetoothResult
-        )
+    private val enableBluetoothActivityResultLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult(), this::handleEnableBluetoothResult
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,8 +53,7 @@ class ClientActivity : AppCompatActivity() {
 
         setContentView(rootBinding.root)
 
-        pickDeviceDialogViewModel =
-            ViewModelProvider(this)[PickDeviceDialogViewModel::class.java]
+        pickDeviceDialogViewModel = ViewModelProvider(this)[PickDeviceDialogViewModel::class.java]
 
         setupObservers()
         setupListeners()
@@ -69,9 +66,7 @@ class ClientActivity : AppCompatActivity() {
 
         if (bluetoothAdapter == null) {
             Toast.makeText(
-                baseContext,
-                R.string.toast_no_bluetooth,
-                Toast.LENGTH_SHORT
+                baseContext, R.string.toast_no_bluetooth, Toast.LENGTH_SHORT
             ).show()
             finish()
             return
@@ -85,8 +80,7 @@ class ClientActivity : AppCompatActivity() {
 
     private fun setupListeners() {
         binding.btnPickServerDevice.setOnClickListener {
-            PickDeviceDialogFragment(
-            ).apply {
+            PickDeviceDialogFragment().apply {
                 setStyle(DialogFragment.STYLE_NORMAL, R.style.Theme_BluetoothBroadcasting_Dialog)
                 show(supportFragmentManager, PickDeviceDialogFragment.TAG)
             }
@@ -100,8 +94,7 @@ class ClientActivity : AppCompatActivity() {
     }
 
     private fun setupObservers() {
-        viewModel.clientStatus
-            .onEach { (stringId, deviceName) ->
+        viewModel.clientStatus.onEach { (stringId, deviceName) ->
                 var statusText = getString(stringId)
                 if (deviceName != null) {
                     statusText = statusText.format(deviceName)
@@ -110,16 +103,13 @@ class ClientActivity : AppCompatActivity() {
                 binding.tvServerConnectionStatus.text = statusText
             }.launchIn(lifecycleScope)
 
-        viewModel.receivedText
-            .onEach { binding.tvMessagePreview.text = it }
+        viewModel.receivedText.onEach { binding.tvMessagePreview.text = it }
             .launchIn(lifecycleScope)
 
-        pickDeviceDialogViewModel.serverEndpointId
-            .onEach(this::observeDialogBluetoothDevice)
+        pickDeviceDialogViewModel.serverEndpointId.onEach(this::observeDialogBluetoothDevice)
             .launchIn(lifecycleScope)
 
-        pickDeviceDialogViewModel.message
-            .onEach {
+        pickDeviceDialogViewModel.message.onEach {
                 if (it.isNotBlank()) {
                     Toast.makeText(baseContext, it, Toast.LENGTH_SHORT).show()
                 }

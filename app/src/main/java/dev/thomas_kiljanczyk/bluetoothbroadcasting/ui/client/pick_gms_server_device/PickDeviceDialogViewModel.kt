@@ -1,4 +1,4 @@
-package dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.client.pickserver
+package dev.thomas_kiljanczyk.bluetoothbroadcasting.ui.client.pick_gms_server_device
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -27,7 +27,7 @@ class PickDeviceDialogViewModel @Inject constructor() : ViewModel() {
         _serverEndpointId.value = null
     }
 
-    fun pickDevice(item: BluetoothDeviceItem) {
+    fun pickDevice(item: GmsNearbyServerDeviceItem) {
         _serverEndpointId.value = item.endpointId
         Log.i(TAG, "Picked : ${item.deviceName}")
     }

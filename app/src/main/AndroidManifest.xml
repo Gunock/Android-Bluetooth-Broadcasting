@@ -29,8 +29,8 @@
         tools:targetApi="s" />
     <uses-permission
         android:name="android.permission.NEARBY_WIFI_DEVICES"
-        android:usesPermissionFlags="neverForLocation"
         android:minSdkVersion="33"
+        android:usesPermissionFlags="neverForLocation"
         tools:targetApi="tiramisu" />
 
     <application
